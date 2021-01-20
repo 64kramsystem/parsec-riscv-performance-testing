@@ -1,0 +1,15 @@
+# VM data
+**/busybear.bin*
+**/*.qcow2
+**/*.iso
+
+# Input
+/components/
+/projects/
+
+# Output, including logs
+/*.log
+/output/
+
+# Temporary location, just in case
+/temp/
