@@ -107,7 +107,7 @@ function run_benchmark {
     "
 
     for ((run = 0; run < v_count_runs; run++)); do
-      echo "Run $run: threads=$threads..."
+      echo "Threads:$threads (run $run)..."
 
       local command_output
       command_output=$(run_local_command "$benchmark_command")
