@@ -18,8 +18,8 @@ c_ssh_password=busybear
 c_ssh_host=localhost
 c_ssh_port=10000
 
-c_components_dir=$(dirname "$0")/components
-c_output_dir=$(dirname "$0")/output
+c_components_dir=$(readlink -f "$(dirname "$0")")/components
+c_output_dir=$(readlink -f "$(dirname "$0")")/output
 
 c_input_file_path=$(ls -1 "$c_components_dir"/*.pigz_input)
 c_qemu_binary=$c_components_dir/qemu-system-riscv64

@@ -6,8 +6,8 @@ set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
 
-c_components_dir=$(dirname "$0")/components
-c_projects_dir=$(dirname "$0")/projects
+c_components_dir=$(readlink -f "$(dirname "$0")")/components
+c_projects_dir=$(readlink -f "$(dirname "$0")")/projects
 
 c_guest_image=$c_components_dir/busybear.bin
 c_guest_image_mount_path=/mnt

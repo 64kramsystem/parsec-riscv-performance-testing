@@ -13,8 +13,8 @@ shopt -s inherit_errexit
 c_min_threads=2
 c_max_threads=128
 
-c_components_dir=$(dirname "$0")/components
-c_output_dir=$(dirname "$0")/output
+c_components_dir=$(readlink -f "$(dirname "$0")")/components
+c_output_dir=$(readlink -f "$(dirname "$0")")/output
 
 c_input_file_path=$(ls -1 "$c_components_dir"/*.pigz_input)
 
