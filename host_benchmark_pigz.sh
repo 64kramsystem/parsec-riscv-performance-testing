@@ -20,13 +20,17 @@ c_input_file_path=$(ls -1 "$c_components_dir"/*.pigz_input)
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' <test_name> <per_test_runs>
+c_help='Usage: '"$(basename "$0")"' [-s|--smt] <test_name> <per_test_runs> <qemu_boot_script>
 
 Measures the wall times of `pigz` exections on the input file with different vCPU/thread numbers, and stores the results.
 
 Example usage:
 
     ./'"$(basename "$0")"' pigz_mytest 1
+
+Options:
+
+- `--smt`: enables SMT (the benchmark disables it by default)
 
 ---
 
@@ -40,6 +44,7 @@ The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `
 # User-defined
 #
 v_count_runs=  # int
+v_smt_on=      # boolean (true=blank, false=anything else)
 
 # Computed internally
 #
@@ -53,11 +58,25 @@ v_thread_numbers_list=        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  # Poor man's options decoding.
-  #
-  if [[ $# -ne 2 || $1 == "-h" || $1 == "--help" ]]; then
+  eval set -- "$(getopt --options hs --long help,smt --name "$(basename "$0")" -- "$@")"
+
+  while true ; do
+    case "$1" in
+      -h|--help)
+        echo "$c_help"
+        exit 0 ;;
+      -s|--smt)
+        v_smt_on=1
+        shift ;;
+      --)
+        shift
+        break ;;
+    esac
+  done
+
+  if [[ $# -ne 2 ]]; then
     echo "$c_help"
-    exit 0
+    exit 1
   fi
 
   v_output_file_name=$c_output_dir/$1.csv
