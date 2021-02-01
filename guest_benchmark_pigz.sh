@@ -182,16 +182,26 @@ function run_benchmark {
 function run_remote_command {
   # If there is an error, the output may never be shown, so we send it to stderr regardless.
   #
-  sshpass -p "$c_ssh_password" ssh -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$1" | tee /dev/stderr
+  # See wait_guest_online() for ssh info.
+  #
+  sshpass -p "$c_ssh_password" \
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+      -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$1" | tee /dev/stderr
 }
 
 # Waiting for the port to be open is not enough, as QEMU leaves it open regardless.
-# It's also good to perform a logon, since the first SSH connection is typically slower.
+#
+# In addition to verify that the ssh service is listening, by connecting, the first SSH connection,
+# which is typically slower, is burned.
+# Disabling the host checking is required, both because sshpass doesn't get along with the host checking
+# prompt, and because if the guest is changed (reset), SSH will complain.
 #
 function wait_guest_online {
   while ! nc -z localhost "$c_ssh_port"; do sleep 1; done
 
-  sshpass -p "$c_ssh_password" ssh -o ConnectTimeout=30 -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" exit
+  sshpass -p "$c_ssh_password" \
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 \
+      -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" exit
 }
 
 # The guest may not (for RISC-V, it won't) respond to an ACPI shutdown, so the QEMU monitor strategy
