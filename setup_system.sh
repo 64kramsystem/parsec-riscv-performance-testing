@@ -86,7 +86,7 @@ function add_toolchain_binaries_to_path {
 
 function install_base_packages {
   sudo apt update
-  sudo apt install -y git build-essential
+  sudo apt install -y git build-essential sshpass pigz gnuplot
 }
 
 function download_projects {
