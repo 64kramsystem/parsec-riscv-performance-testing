@@ -162,17 +162,17 @@ function run_benchmark {
 #
 function run_remote_command {
   # If there is an error, the output may never be shown, so we send it to stderr regardless.
-  # The timeout is also relatively small - if busybear hangs, QEMU still listens to the port, so the
-  # timeout fails earlier and cleaner.
   #
-  sshpass -p "$c_ssh_password" ssh -o ConnectTimeout=15 -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$1" | tee /dev/stderr
+  sshpass -p "$c_ssh_password" ssh -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$1" | tee /dev/stderr
 }
 
-# Simplistically assumes that once the SSH port is available, the system is ready (including, from a
-# performance perspective).
+# Waiting for the port to be open is not enough, as QEMU leaves it open regardless.
+# It's also good to perform a logon, since the first SSH connection is typically slower.
 #
 function wait_guest_online {
   while ! nc -z localhost "$c_ssh_port"; do sleep 1; done
+
+  sshpass -p "$c_ssh_password" ssh -o ConnectTimeout=30 -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" exit
 }
 
 # The guest may not (for RISC-V, it won't) respond to an ACPI shutdown, so the QEMU monitor strategy
