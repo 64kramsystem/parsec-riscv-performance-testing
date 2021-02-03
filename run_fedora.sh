@@ -12,7 +12,7 @@ c_local_ssh_port=10000
 
 c_qemu_binary=$c_components_dir/qemu-system-riscv64
 c_vcpus=$(nproc)
-c_guest_memory=8G
+c_guest_memory=14G
 c_guest_image_source=$c_components_dir/Fedora-Minimal-Rawhide-20200108.n.0-sda.qcow2
 c_guest_image_diff=${c_guest_image_source/.qcow2/.diff.qcow2}
 c_kernel_image=$c_components_dir/Image
