@@ -336,6 +336,7 @@ function copy_data_to_guest_image {
     "$c_pigz_binary_file"
   )
 
+  local loop_device
   loop_device=$(sudo losetup --show --find --partscan "$c_guest_image")
 
   sudo mount "$loop_device" "$c_guest_image_mount_path"
