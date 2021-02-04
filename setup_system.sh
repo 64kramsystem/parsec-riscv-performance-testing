@@ -212,8 +212,8 @@ DIFF
 DIFF
 }
 
-function patch_busybear {
-  echo "Patching busybear..."
+function prepare_busybear {
+  echo "Preparing BusyBear..."
 
   cd "$c_projects_dir/busybear-linux"
 
@@ -385,7 +385,7 @@ build_toolchain
 
 prepare_toolchain
 prepare_linux_kernel
-patch_busybear
+prepare_busybear
 prepare_qemu
 
 build_linux_kernel
