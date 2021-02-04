@@ -6,26 +6,42 @@ set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
 
+####################################################################################################
+# VARIABLES/CONSTANTS
+####################################################################################################
+
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
 c_projects_dir=$(readlink -f "$(dirname "$0")")/projects
-
-c_guest_image=$c_components_dir/busybear.bin
-c_guest_image_mount_path=/mnt
-export c_guest_image_size=5120 # integer; number of megabytes
 
 c_debug_log_file=$(basename "$0").log
 
 c_toolchain_address=https://github.com/riscv/riscv-gnu-toolchain.git
 c_linux_repo_address=git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+c_fedora_image_address=https://dl.fedoraproject.org/pub/alt/risc-v/repo/virt-builder-images/images/Fedora-Minimal-Rawhide-20200108.n.0-sda.raw.xz
 c_opensbi_tarball_address=https://github.com/riscv/opensbi/releases/download/v0.9/opensbi-0.9-rv-bin.tar.xz
 c_busybear_repo_address=https://github.com/michaeljclark/busybear-linux.git
 c_qemu_repo_address=https://github.com/saveriomiroddi/qemu-pinning.git
+c_parsec_benchmark_address=https://github.com/darchr/parsec-benchmark.git
+c_parsec_inputs_address=http://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-sim.tar.gz
 c_zlib_repo_address=https://github.com/madler/zlib.git
 c_pigz_repo_address=https://github.com/madler/pigz.git
 
 # The file_path can be anything, as long as it ends with '.pigz_input', so that it's picked up by the
 # benchmark script.
 c_pigz_input_file_address=https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
+
+c_busybear_image=$c_components_dir/busybear.bin
+c_busybear_image_mount_path=/mnt
+export c_busybear_image_size=5120 # integer; number of megabytes
+c_fedora_image_size=20G
+c_fedora_run_memory=8G
+c_local_ssh_port=10000
+c_local_fedora_raw_image_path=$c_projects_dir/$(echo "$c_fedora_image_address" | perl -ne 'print /([^\/]+)\.xz$/')
+c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.qcow2}"
+c_fedora_temp_expanded_image_path=$(dirname "$(mktemp)")/fedora.temp.expanded.raw
+c_local_parsec_inputs_path=$c_projects_dir/$(basename "$c_parsec_inputs_address")
+c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
+c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
 
 c_compiler_binary=$c_projects_dir/riscv-gnu-toolchain/build/bin/riscv64-unknown-linux-gnu-gcc
 c_riscv_firmware_file=share/opensbi/lp64/generic/firmware/fw_dynamic.bin # relative
@@ -86,7 +102,7 @@ function add_toolchain_binaries_to_path {
 
 function install_base_packages {
   sudo apt update
-  sudo apt install -y git build-essential sshpass pigz gnuplot
+  sudo apt install -y git build-essential sshpass pigz gnuplot libguestfs-tools
 }
 
 function download_projects {
@@ -95,6 +111,7 @@ function download_projects {
     "$c_linux_repo_address"
     "$c_busybear_repo_address"
     "$c_qemu_repo_address"
+    "$c_parsec_benchmark_address"
     "$c_zlib_repo_address"
     "$c_pigz_repo_address"
   )
@@ -115,8 +132,14 @@ function download_projects {
     fi
   done
 
-  # This is a release tarball, so it needs different handling.
-  #
+  # Tarballs
+
+  if [[ -f $c_local_fedora_raw_image_path ]]; then
+    echo "\`$(basename "$c_local_fedora_raw_image_path")\` image found; not downloading..."
+  else
+    wget --output-document=/dev/stdout "$c_fedora_image_address" | xz -d > "$c_local_fedora_raw_image_path"
+  fi
+
   local opensbi_project_basename
   opensbi_project_basename=$(echo "$c_opensbi_tarball_address" | perl -ne 'print /([^\/]+)\.tar.\w+$/')
 
@@ -217,9 +240,9 @@ function prepare_busybear {
 
   cd "$c_projects_dir/busybear-linux"
 
-  # 100 MB ought to be enough for everybody, but raise it to $c_guest_image_size anyway.
+  # 100 MB ought to be enough for everybody, but raise it to $c_busybear_image_size anyway.
   #
-  perl -i -pe "s/^IMAGE_SIZE=\K.*/$c_guest_image_size/" conf/busybear.config
+  perl -i -pe "s/^IMAGE_SIZE=\K.*/$c_busybear_image_size/" conf/busybear.config
 
   # Correct the networking to use QEMU's user networking. Busybear's default networking setup (bridging)
   # is overkill and generally not working.
@@ -284,14 +307,89 @@ function build_busybear {
 function build_qemu {
   cd "$c_projects_dir/qemu-pinning"
 
-  qemu_binary_file=bin/debug/native/qemu-system-riscv64
-
-  if [[ -f $qemu_binary_file ]]; then
+  if [[ -f $c_qemu_binary ]]; then
     echo "QEMU binary found; not compiling/copying..."
   else
     ./build_pinning_qemu_binary.sh --target=riscv64 --yes
 
-    cp "$qemu_binary_file" "$c_components_dir"/
+    cp "$c_qemu_binary" "$c_components_dir"/
+  fi
+}
+
+# Depends on QEMU.
+#
+function prepare_fedora {
+  echo "Preparing Fedora..."
+
+  # Chunky procedure, so don't redo it if the file exists.
+  #
+  if [[ -f $c_local_fedora_prepared_image_path ]]; then
+    echo "Prepared fedora image found; not processing..."
+  else
+    ####################################
+    # Extend image
+    ####################################
+
+    rm -f "$c_fedora_temp_expanded_image_path"
+
+    truncate -s "$c_fedora_image_size" "$c_fedora_temp_expanded_image_path"
+    sudo virt-resize -v -x --expand /dev/sda4 "$c_local_fedora_raw_image_path" "$c_fedora_temp_expanded_image_path"
+
+    ######################################
+    # Set passwordless sudo
+    ######################################
+
+    local local_mount_dir=/mnt
+
+    local loop_device
+    loop_device=$(sudo losetup --show --find --partscan "$c_fedora_temp_expanded_image_path")
+
+    # Watch out, must mount partition 4
+    sudo mount "${loop_device}p4" "$local_mount_dir"
+
+    # Sud-bye!
+    sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$local_mount_dir/etc/sudoers"
+
+    sudo umount "$local_mount_dir"
+    sudo losetup -d "$loop_device"
+
+    ####################################
+    # Start Fedora
+    ####################################
+
+    # Make sure there's no zombie around.
+    #
+    pkill -f "$(basename "$c_qemu_binary")" || true
+
+    start_fedora "$c_fedora_temp_expanded_image_path"
+
+    ####################################
+    # Disable long-running service
+    ####################################
+
+    run_fedora_command 'sudo systemctl mask man-db-cache-update'
+
+    ####################################
+    # Install packages and copy PARSEC
+    ####################################
+
+    run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
+    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo'
+
+    tar c --directory "$c_projects_dir" --exclude=parsec-benchmark/.git parsec-benchmark | run_fedora_command "tar xv"
+
+    shutdown_fedora
+
+    ####################################
+    # Compress and cleanup
+    ####################################
+
+    sudo virt-sparsify --convert qcow2 --compress "$c_fedora_temp_expanded_image_path" "$c_local_fedora_prepared_image_path"
+    sudo chown "$USER": "$c_local_fedora_prepared_image_path"
+
+    # Don't bother with exit traps, but at least delete it on script restart, if present.
+    #
+    rm "$c_fedora_temp_expanded_image_path"
   fi
 }
 
@@ -337,34 +435,89 @@ function copy_data_to_guest_image {
   )
 
   local loop_device
-  loop_device=$(sudo losetup --show --find --partscan "$c_guest_image")
+  loop_device=$(sudo losetup --show --find --partscan "$c_busybear_image")
 
-  sudo mount "$loop_device" "$c_guest_image_mount_path"
+  sudo mount "$loop_device" "$c_busybear_image_mount_path"
 
   for source_file in "${source_files[@]}"; do
     local destination_file
-    destination_file=$c_guest_image_mount_path/root/$(basename "$source_file")
+    destination_file=$c_busybear_image_mount_path/root/$(basename "$source_file")
 
     if [[ -f $destination_file ]]; then
       echo "Skipping $source_file (existing in guest image)..."
     else
       echo "Copying $source_file to guest image..."
-      sudo cp "$source_file" "$c_guest_image_mount_path"/
+      sudo cp "$source_file" "$c_busybear_image_mount_path"/
     fi
   done
 
   # This goes into a different directory. It's small, so we copy it regardless.
   #
   echo "Copying $(basename "$c_libz_file") to guest image (regardless)..."
-  sudo cp "$c_libz_file" "$c_guest_image_mount_path"/lib/
+  sudo cp "$c_libz_file" "$c_busybear_image_mount_path"/lib/
 
-  sudo umount "$c_guest_image_mount_path"
+  sudo umount "$c_busybear_image_mount_path"
 
   sudo losetup -d "$loop_device"
 }
 
 function print_completion_message {
   echo "Preparation completed!"
+}
+
+####################################################################################################
+# HELPERS
+####################################################################################################
+
+# $1: disk image
+#
+function start_fedora {
+  local kernel_image=$c_components_dir/Image
+  local bios_image=$c_components_dir/fw_dynamic.bin
+  local disk_image=$1
+  local image_format=${disk_image##*.}
+
+  "$c_qemu_binary" \
+    -daemonize \
+    -display none \
+    -pidfile "$c_qemu_pidfile" \
+    -machine virt \
+    -smp "$(nproc)",cores="$(nproc)",sockets=1,threads=1 \
+    -accel tcg,thread=multi \
+    -m "$c_fedora_run_memory" \
+    -kernel "$kernel_image" \
+    -bios "$bios_image" \
+    -append "root=/dev/vda4 ro console=ttyS0" \
+    -object rng-random,filename=/dev/urandom,id=rng0 \
+    -device virtio-rng-device,rng=rng0 \
+    -device virtio-blk-device,drive=hd0 \
+    -drive file="$disk_image",format="$image_format",id=hd0 \
+    -device virtio-net-device,netdev=usernet \
+    -netdev user,id=usernet,hostfwd=tcp::"$c_local_ssh_port"-:22
+
+  while ! nc -z localhost "$c_local_ssh_port"; do sleep 1; done
+
+  run_fedora_command -o ConnectTimeout=30 exit
+}
+
+# $@: ssh params
+#
+function run_fedora_command {
+  sshpass -p 'fedora_rocks!' \
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+      -p "$c_local_ssh_port" riscv@localhost "$@"
+}
+
+function shutdown_fedora {
+  # Watch out - halting via ssh causes an error, since the connection is truncated.
+  #
+  run_fedora_command "sudo halt" || true
+
+  # Shutdown is asynchronous, so just wait for the pidfile to go.
+  #
+  while [[ -f $c_qemu_pidfile ]]; do
+    sleep 0.5
+  done
 }
 
 ####################################################################################################
@@ -393,6 +546,10 @@ build_linux_kernel
 build_busybear
 copy_opensbi_firmware
 build_qemu
+
+# This needs to be prepared late, due the QEMU binary dependency.
+prepare_fedora
+
 build_pigz
 
 download_pigz_input_file
