@@ -177,7 +177,7 @@ function run_benchmark {
 # HELPERS
 ####################################################################################################
 
-# Input: $1=command
+# Input: $@=ssh params
 #
 function run_remote_command {
   # If there is an error, the output may never be shown, so we send it to stderr regardless.
@@ -186,7 +186,7 @@ function run_remote_command {
   #
   sshpass -p "$c_ssh_password" \
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-      -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$1" | tee /dev/stderr
+      -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$@" | tee /dev/stderr
 }
 
 # Waiting for the port to be open is not enough, as QEMU leaves it open regardless.
@@ -199,9 +199,7 @@ function run_remote_command {
 function wait_guest_online {
   while ! nc -z localhost "$c_ssh_port"; do sleep 1; done
 
-  sshpass -p "$c_ssh_password" \
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 \
-      -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" exit
+  run_remote_command -o ConnectTimeout=30 exit
 }
 
 # The guest may not (for RISC-V, it won't) respond to an ACPI shutdown, so the QEMU monitor strategy
