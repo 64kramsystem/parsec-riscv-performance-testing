@@ -342,13 +342,13 @@ function copy_data_to_guest_image {
 
   for source_file in "${source_files[@]}"; do
     local destination_file
-    destination_file=$c_guest_image_mount_path/$(basename "$source_file")
+    destination_file=$c_guest_image_mount_path/root/$(basename "$source_file")
 
     if [[ -f $destination_file ]]; then
       echo "Skipping $source_file (existing in guest image)..."
     else
       echo "Copying $source_file to guest image..."
-      sudo cp "$source_file" "$c_guest_image_mount_path"/root/
+      sudo cp "$source_file" "$c_guest_image_mount_path"/
     fi
   done
 
