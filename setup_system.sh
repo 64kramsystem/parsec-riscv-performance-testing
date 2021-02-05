@@ -39,6 +39,7 @@ c_local_ssh_port=10000
 c_local_fedora_raw_image_path=$c_projects_dir/$(echo "$c_fedora_image_address" | perl -ne 'print /([^\/]+)\.xz$/')
 c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.qcow2}"
 c_fedora_temp_expanded_image_path=$(dirname "$(mktemp)")/fedora.temp.expanded.raw
+c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
 c_local_parsec_inputs_path=$c_projects_dir/$(basename "$c_parsec_inputs_address")
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
@@ -418,6 +419,38 @@ function build_pigz {
   fi
 }
 
+function build_parsec {
+  # double check the name
+  #
+  local sample_built_package=$c_projects_dir/parsec-benchmark/pkgs/apps/blackscholes/inst/riscv64-linux.gcc/bin/blackscholes
+
+  if [[ -f $sample_built_package ]]; then
+    echo "Sample PARSEC package found ($(basename "$sample_built_package")); not building..."
+  else
+    # Technically, we could leave the QEMU hanging around and copy directly from the VM to the BusyBear
+    # image in the appropriate stage, but better to separate stages very clearly.
+    #
+    echo "Building PARSEC suite in the Fedora VM, and copying it back..."
+
+    # Make sure there's no zombie around.
+    #
+    pkill -f "$(basename "$c_qemu_binary")" || true
+
+    cp "$c_local_fedora_prepared_image_path" "$c_fedora_temp_build_image_path"
+
+    start_fedora "$c_fedora_temp_build_image_path"
+
+    run_fedora_command "
+      cd parsec-benchmark &&
+      bin/parsecmgmt -a build -p blackscholes
+    "
+
+    run_fedora_command "tar c parsec-benchmark" | tar xv --directory="$c_projects_dir"
+
+    shutdown_fedora
+  fi
+}
+
 function download_pigz_input_file {
   if [[ -f $c_pigz_input_file ]]; then
     echo "Pigz input file found; not downloading..."
@@ -550,6 +583,7 @@ build_qemu
 # This needs to be prepared late, due the QEMU binary dependency.
 prepare_fedora
 
+build_parsec
 build_pigz
 
 download_pigz_input_file
