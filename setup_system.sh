@@ -531,6 +531,21 @@ function start_fedora {
   while ! nc -z localhost "$c_local_ssh_port"; do sleep 1; done
 
   run_fedora_command -o ConnectTimeout=30 exit
+
+  # Something's odd going on here. One minute or two into the installation of the development packages,
+  # the VM connection would drop, causing dnf to fail, and the port on the host to stay open, but without
+  # the SSH service starting the handshake. This points either to the QEMU networking having some issue,
+  # or to some internal Fedora service dropping the connection, although the latter seems unlikely,
+  # as repeated connection to the port shouldn't prevent the problem it to happen.
+  #
+  set +x
+  {
+    while nc -z localhost "$c_local_ssh_port"; do
+      curl localhost:"$c_local_ssh_port" 2> /dev/null || true
+      sleep 1
+    done
+  } &
+  set -x
 }
 
 # $@: ssh params
