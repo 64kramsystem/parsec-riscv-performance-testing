@@ -7,19 +7,56 @@ set -o errtrace
 shopt -s inherit_errexit
 
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
+c_projects_dir=$(readlink -f "$(dirname "$0")")/projects
+c_temp_dir=$(dirname "$(mktemp)")
 
 c_local_ssh_port=10000
 
 c_qemu_binary=$c_components_dir/qemu-system-riscv64
 c_vcpus=$(nproc)
 c_guest_memory=14G
-c_guest_image_source=$c_components_dir/Fedora-Minimal-Rawhide-20200108.n.0-sda.qcow2
-c_guest_image_diff=${c_guest_image_source/.qcow2/.diff.qcow2}
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
 
+c_original_image=$c_projects_dir/Fedora-Minimal-Rawhide-20200108.n.0-sda.raw
+c_prepared_image=$c_projects_dir/Fedora-Minimal-Rawhide-20200108.n.0-sda.prepared.qcow2
+c_run_image=$c_temp_dir/fedora.run.qcow2
+
+c_help="Usage: $(basename "$0") [-p|--prepared]"
+
+v_use_prepared_image= # boolean (blank: false, anything else: true)
+
+function decode_cmdline_options {
+  eval set -- "$(getopt --options hp --long help,prepared --name "$(basename "$0")" -- "$@")"
+
+  while true ; do
+    case "$1" in
+      -h|--help)
+        echo "$c_help"
+        exit 0 ;;
+      -p|--prepared)
+        v_use_prepared_image=1
+        shift ;;
+      --)
+        shift
+        break ;;
+    esac
+  done
+
+  if [[ $# -ne 0 ]]; then
+    echo "$c_help"
+    exit 1
+  fi
+}
+
 function create_temp_image {
-  qemu-img create -f qcow2 -b "$c_guest_image_source" "$c_guest_image_diff"
+  if [[ -n $v_use_prepared_image ]]; then
+    local source_image=$c_prepared_image
+  else
+    local source_image=$c_original_image
+  fi
+
+  qemu-img create -f qcow2 -b "$source_image" "$c_run_image"
 }
 
 function run_qemu {
@@ -40,10 +77,11 @@ function run_qemu {
     -object rng-random,filename=/dev/urandom,id=rng0 \
     -device virtio-rng-device,rng=rng0 \
     -device virtio-blk-device,drive=hd0 \
-    -drive file="$c_guest_image_diff",format=qcow2,id=hd0 \
+    -drive file="$c_run_image",format=qcow2,id=hd0 \
     -device virtio-net-device,netdev=usernet \
     -netdev user,id=usernet,hostfwd=tcp::"$c_local_ssh_port"-:22
 }
 
+decode_cmdline_options "$@"
 create_temp_image
 run_qemu
