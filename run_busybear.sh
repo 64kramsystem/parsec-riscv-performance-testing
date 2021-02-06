@@ -19,7 +19,7 @@ c_guest_image_run=$c_temp_dir/busybear.run.qcow2
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
 
-cp "$c_guest_image_source" "$c_guest_image_run"
+qemu-img create -f qcow2 -b "$c_guest_image_source" "$c_guest_image_run"
 
 "$c_qemu_binary" \
   -nographic \
