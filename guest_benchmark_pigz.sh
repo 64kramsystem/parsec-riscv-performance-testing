@@ -20,6 +20,7 @@ c_ssh_port=10000
 
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
 c_output_dir=$(readlink -f "$(dirname "$0")")/output
+c_temp_dir=$(dirname "$(mktemp)")
 
 c_input_file_path=$(ls -1 "$c_components_dir"/*.pigz_input)
 c_qemu_binary=$c_components_dir/qemu-system-riscv64
@@ -29,7 +30,7 @@ c_qemu_binary=$c_components_dir/qemu-system-riscv64
 #
 c_guest_memory=8G
 c_guest_image_source=$c_components_dir/busybear.bin
-c_guest_image_run=$c_components_dir/busybear.run.bin
+c_guest_image_run=$c_temp_dir/busybear.run.qcow2
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
@@ -115,9 +116,9 @@ function load_includes {
 }
 
 function copy_busybear_image {
-  echo "Copying fresh BusyBear image..."
+  echo "Creating BusyBear run image..."
 
-  cp "$c_guest_image_source" "$c_guest_image_run"
+  qemu-img create -f qcow2 -b "$c_guest_image_source" "$c_guest_image_run"
 }
 
 # Since we copy the image each time, we can just kill QEMU. We leave the run image, if debug is needed.
