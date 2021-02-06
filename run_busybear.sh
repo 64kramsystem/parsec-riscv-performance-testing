@@ -7,6 +7,7 @@ set -o errtrace
 shopt -s inherit_errexit
 
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
+c_temp_dir=$(dirname "$(mktemp)")
 
 c_local_ssh_port=10000
 
@@ -14,7 +15,7 @@ c_qemu_binary=$c_components_dir/qemu-system-riscv64
 c_vcpus=$(nproc)
 c_guest_memory=14G
 c_guest_image_source=$c_components_dir/busybear.bin
-c_guest_image_run=$c_components_dir/busybear.run.bin
+c_guest_image_run=$c_temp_dir/busybear.run.qcow2
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
 
