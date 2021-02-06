@@ -147,7 +147,7 @@ function download_projects {
   if [[ -d $c_projects_dir/$opensbi_project_basename ]]; then
     echo "\`$opensbi_project_basename\` project found; not downloading..."
   else
-    wget --output-document=/dev/stdout "$c_opensbi_tarball_address" | tar xvJ --directory="$c_projects_dir"
+    wget --output-document=/dev/stdout "$c_opensbi_tarball_address" | tar xJ --directory="$c_projects_dir"
   fi
 }
 
@@ -377,7 +377,7 @@ function prepare_fedora {
     run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
     run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo'
 
-    tar c --directory "$c_projects_dir" --exclude=parsec-benchmark/.git parsec-benchmark | run_fedora_command "tar xv"
+    tar c --directory "$c_projects_dir" --exclude=parsec-benchmark/.git parsec-benchmark | run_fedora_command "tar xv" | grep '/$'
 
     shutdown_fedora
 
@@ -445,7 +445,7 @@ function build_parsec {
       bin/parsecmgmt -a build -p blackscholes
     "
 
-    run_fedora_command "tar c parsec-benchmark" | tar xv --directory="$c_projects_dir"
+    run_fedora_command "tar c parsec-benchmark" | tar xv --directory="$c_projects_dir" | grep '/$'
 
     shutdown_fedora
   fi
