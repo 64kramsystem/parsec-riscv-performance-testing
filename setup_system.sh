@@ -375,7 +375,9 @@ function prepare_fedora {
     ####################################
 
     run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
-    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo'
+    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel'
+    # To replace with xargs once the script is releasable.
+    run_fedora_command 'echo "will cite" | parallel --citation || true'
 
     tar c --directory "$c_projects_dir" --exclude=parsec-benchmark/.git parsec-benchmark | run_fedora_command "tar xv" | grep '/$'
 
@@ -440,9 +442,49 @@ function build_parsec {
 
     start_fedora "$c_fedora_temp_build_image_path"
 
+    # Some packages depend on zlib, so we build it first.
+    #
     run_fedora_command "
       cd parsec-benchmark &&
-      bin/parsecmgmt -a build -p blackscholes
+      bin/parsecmgmt -a build -p zlib &&
+      parallel bin/parsecmgmt -a build -p ::: parmacs gsl libjpeg libxml2
+    "
+
+    local parsec_packages=(
+      parsec.blackscholes
+      parsec.bodytrack
+      parsec.dedup
+      parsec.facesim
+      parsec.ferret
+      parsec.fluidanimate
+      parsec.freqmine
+      parsec.streamcluster
+      parsec.swaptions
+      parsec.vips
+      splash2x.barnes
+      splash2x.cholesky
+      splash2x.fft
+      splash2x.fmm
+      splash2x.lu_cb
+      splash2x.lu_ncb
+      splash2x.ocean_cp
+      splash2x.ocean_ncp
+      splash2x.radiosity
+      splash2x.radix
+      splash2x.raytrace
+      splash2x.volrend
+      splash2x.water_nsquared
+      splash2x.water_spatial
+    )
+
+    # The optimal number of parallel processes can't be easily assessed. Considering that each build
+    # has nproc max jobs, and that builds work in bursts, 12.5% builds/nproc (e.g. 4 on 32) should be
+    # reasonable.
+    # The build time is dominated anyway by `vips`, which is significantly longer than the other ones.
+
+    run_fedora_command "
+      cd parsec-benchmark &&
+      parallel --max-procs=12.5% bin/parsecmgmt -a build -p ::: ${parsec_packages[*]}
     "
 
     run_fedora_command "tar c parsec-benchmark" | tar xv --directory="$c_projects_dir" | grep '/$'
