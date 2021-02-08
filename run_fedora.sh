@@ -25,9 +25,10 @@ c_run_image=$c_temp_dir/fedora.run.qcow2
 c_help="Usage: $(basename "$0") [-p|--prepared]"
 
 v_use_prepared_image= # boolean (blank: false, anything else: true)
+v_use_temp_image=1    # boolean (blank: false, anything else: true)
 
 function decode_cmdline_options {
-  eval set -- "$(getopt --options hp --long help,prepared --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hpn --long help,prepared,no-temp --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -36,6 +37,9 @@ function decode_cmdline_options {
         exit 0 ;;
       -p|--prepared)
         v_use_prepared_image=1
+        shift ;;
+      -n|--no-temp)
+        v_use_temp_image=
         shift ;;
       --)
         shift
@@ -49,14 +53,21 @@ function decode_cmdline_options {
   fi
 }
 
-function create_temp_image {
+function prepare_run_image {
   if [[ -n $v_use_prepared_image ]]; then
     local source_image=$c_prepared_image
   else
     local source_image=$c_original_image
   fi
 
-  qemu-img create -f qcow2 -b "$source_image" "$c_run_image"
+  if [[ -n $v_use_temp_image ]]; then
+    qemu-img create -f qcow2 -b "$source_image" "$c_run_image"
+  else
+    c_run_image=$source_image
+
+    echo ">>> Warning: running with source image: $(basename "$c_run_image")"
+    read -rsn1
+  fi
 }
 
 function run_qemu {
@@ -83,5 +94,5 @@ function run_qemu {
 }
 
 decode_cmdline_options "$@"
-create_temp_image
+prepare_run_image
 run_qemu
