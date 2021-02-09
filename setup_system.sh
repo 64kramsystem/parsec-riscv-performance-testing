@@ -43,7 +43,7 @@ c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepar
 c_fedora_temp_expanded_image_path=$(dirname "$(mktemp)")/fedora.temp.expanded.raw
 c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
 c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
-c_local_parsec_benchmark_path=$c_projects_dir/$(echo "$c_parsec_benchmark_address" | perl -ne 'print /([^\/]+)\.git$/')
+c_local_parsec_benchmark_path=$c_projects_dir/parsec-benchmark
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
 
@@ -123,7 +123,11 @@ function download_projects {
   cd "$c_projects_dir"
 
   for project_address in "${project_addresses[@]}"; do
-    project_basename=$(echo "$project_address" | perl -ne 'print /([^\/]+)\.git$/')
+    if [[ $project_address == *"parsec-benchmark-tweaked"* ]]; then
+      project_basename=parsec-benchmark
+    else
+      project_basename=$(echo "$project_address" | perl -ne 'print /([^\/]+)\.git$/')
+    fi
 
     if [[ -d $project_basename ]]; then
       echo "\`$project_basename\` project found; not cloning..."
