@@ -22,7 +22,8 @@ c_opensbi_tarball_address=https://github.com/riscv/opensbi/releases/download/v0.
 c_busybear_repo_address=https://github.com/michaeljclark/busybear-linux.git
 c_qemu_repo_address=https://github.com/saveriomiroddi/qemu-pinning.git
 c_parsec_benchmark_address=git@github.com:saveriomiroddi/parsec-benchmark-tweaked.git
-c_parsec_inputs_address=http://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-sim.tar.gz
+c_parsec_sim_inputs_address=https://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-sim.tar.gz
+c_parsec_native_inputs_address=https://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-native.tar.gz
 c_zlib_repo_address=https://github.com/madler/zlib.git
 c_pigz_repo_address=https://github.com/madler/pigz.git
 
@@ -40,7 +41,7 @@ c_local_fedora_raw_image_path=$c_projects_dir/$(echo "$c_fedora_image_address" |
 c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.qcow2}"
 c_fedora_temp_expanded_image_path=$(dirname "$(mktemp)")/fedora.temp.expanded.raw
 c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
-c_local_parsec_inputs_path=$c_projects_dir/$(basename "$c_parsec_inputs_address")
+c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
 
@@ -148,6 +149,16 @@ function download_projects {
     echo "\`$opensbi_project_basename\` project found; not downloading..."
   else
     wget --output-document=/dev/stdout "$c_opensbi_tarball_address" | tar xJ --directory="$c_projects_dir"
+  fi
+
+  if [[ -d $c_local_parsec_inputs_path ]]; then
+    echo "Parsec inputs project found; not downloading..."
+  else
+    wget --output-document=/dev/stdout "$c_parsec_sim_inputs_address" |
+      tar xz --directory="$c_projects_dir" --transform="s/^parsec-3.0/$(basename "$c_local_parsec_inputs_path")/"
+
+    wget --output-document=/dev/stdout "$c_parsec_native_inputs_address" |
+      tar xz --directory="$c_projects_dir" --transform="s/^parsec-3.0/$(basename "$c_local_parsec_inputs_path")/"
   fi
 }
 
