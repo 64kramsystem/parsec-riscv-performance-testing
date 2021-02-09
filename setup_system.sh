@@ -34,7 +34,7 @@ c_pigz_input_file_address=https://cdimage.debian.org/debian-cd/current-live/amd6
 c_busybear_raw_image_path=$c_projects_dir/busybear-linux/busybear.bin
 c_busybear_prepared_image_path=$c_components_dir/busybear.bin
 c_busybear_image_mount_path=/mnt
-export c_busybear_image_size=5120 # integer; number of megabytes
+export c_busybear_image_size=20480 # integer; number of megabytes
 c_fedora_image_size=20G
 c_fedora_run_memory=8G
 c_local_ssh_port=10000
@@ -43,6 +43,7 @@ c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepar
 c_fedora_temp_expanded_image_path=$(dirname "$(mktemp)")/fedora.temp.expanded.raw
 c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
 c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
+c_local_parsec_benchmark_path=$c_projects_dir/$(echo "$c_parsec_benchmark_address" | perl -ne 'print /([^\/]+)\.git$/')
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
 
@@ -254,6 +255,7 @@ function prepare_busybear {
   cd "$c_projects_dir/busybear-linux"
 
   # 100 MB ought to be enough for everybody, but raise it to $c_busybear_image_size anyway.
+  # IMAGE_SIZE is the `count` of a `dd bs=1M` (which actually accepts size suffixes).
   #
   perl -i -pe "s/^IMAGE_SIZE=\K.*/$c_busybear_image_size/" conf/busybear.config
 
@@ -305,13 +307,11 @@ function build_busybear {
   cd "$c_projects_dir/busybear-linux"
 
   if [[ -f $c_busybear_raw_image_path ]]; then
-    echo "Busybear image found; not making/copying..."
+    echo "Busybear image found; not building..."
   else
     echo 'WATCH OUT!! Busybear may fail without useful messages. If this happens, add `set -x` on top of its `build.sh` script.'
 
     make
-
-    cp "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
   fi
 }
 
@@ -385,7 +385,7 @@ function prepare_fedora {
     ####################################
 
     run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
-    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel'
+    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel rsync'
     # To replace with xargs once the script is releasable.
     run_fedora_command 'echo "will cite" | parallel --citation || true'
     # Conveniences
@@ -515,33 +515,40 @@ function download_pigz_input_file {
 
 # For simplicity, just run it without checking if the files already exist.
 #
-function copy_data_to_guest_image {
-  local source_files=(
-    "$c_pigz_input_file"
-    "$c_pigz_binary_file"
-  )
+function prepare_final_image_with_data {
+  if [[ ! -f $c_busybear_prepared_image_path ]]; then
+    echo "BusyBear prepared image not found, copying..."
+
+    cp "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
+  fi
+
+  ######################################
+  # Mount image
+  ######################################
 
   local loop_device
   loop_device=$(sudo losetup --show --find --partscan "$c_busybear_prepared_image_path")
 
   sudo mount "$loop_device" "$c_busybear_image_mount_path"
 
-  for source_file in "${source_files[@]}"; do
-    local destination_file
-    destination_file=$c_busybear_image_mount_path/root/$(basename "$source_file")
+  ######################################
+  # Pigz(-related)
+  ######################################
 
-    if [[ -f $destination_file ]]; then
-      echo "Skipping $source_file (existing in guest image)..."
-    else
-      echo "Copying $source_file to guest image..."
-      sudo cp "$source_file" "$c_busybear_image_mount_path"/
-    fi
-  done
+  sudo rsync -av          "$c_pigz_binary_file" "$c_busybear_image_mount_path"/root/
+  sudo rsync -av          "$c_libz_file"        "$c_busybear_image_mount_path"/lib/
+  sudo rsync -av --append "$c_pigz_input_file"  "$c_busybear_image_mount_path"/root/
 
-  # This goes into a different directory. It's small, so we copy it regardless.
-  #
-  echo "Copying $(basename "$c_libz_file") to guest image (regardless)..."
-  sudo cp "$c_libz_file" "$c_busybear_image_mount_path"/lib/
+  ######################################
+  # PARSEC + Inputs
+  ######################################
+
+  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_busybear_image_mount_path"/root/ | grep '/$'
+  sudo rsync -av --info=progress2 --no-inc-recursive --append       "$c_local_parsec_inputs_path"    "$c_busybear_image_mount_path"/root/ | grep '/$'
+
+  ######################################
+  # Unmount image
+  ######################################
 
   sudo umount "$c_busybear_image_mount_path"
 
@@ -656,6 +663,6 @@ build_parsec
 build_pigz
 
 download_pigz_input_file
-copy_data_to_guest_image
+prepare_final_image_with_data
 
 print_completion_message
