@@ -162,6 +162,14 @@ function download_projects {
     wget --output-document=/dev/stdout "$c_parsec_native_inputs_address" |
       tar xz --directory="$c_projects_dir" --transform="s/^parsec-3.0/$(basename "$c_local_parsec_inputs_path")/"
   fi
+
+  # Pigz input
+
+  if [[ -f $c_pigz_input_file ]]; then
+    echo "Pigz input file found; not downloading..."
+  else
+    wget "$c_pigz_input_file_address" -O "$c_pigz_input_file"
+  fi
 }
 
 function build_toolchain {
@@ -505,14 +513,6 @@ function build_parsec {
   fi
 }
 
-function download_pigz_input_file {
-  if [[ -f $c_pigz_input_file ]]; then
-    echo "Pigz input file found; not downloading..."
-  else
-    wget "$c_pigz_input_file_address" -O "$c_pigz_input_file"
-  fi
-}
-
 # For simplicity, just run it without checking if the files already exist.
 #
 function prepare_final_image_with_data {
@@ -662,7 +662,6 @@ prepare_fedora
 build_parsec
 build_pigz
 
-download_pigz_input_file
 prepare_final_image_with_data
 
 print_completion_message
