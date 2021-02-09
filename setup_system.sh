@@ -378,6 +378,8 @@ function prepare_fedora {
     run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel'
     # To replace with xargs once the script is releasable.
     run_fedora_command 'echo "will cite" | parallel --citation || true'
+    # Conveniences
+    run_fedora_command 'sudo dnf install -y vim pv zstd the_silver_searcher rsync htop'
 
     tar c --directory "$c_projects_dir" --exclude=parsec-benchmark/.git parsec-benchmark | run_fedora_command "tar xv" | grep '/$'
 
