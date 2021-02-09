@@ -129,14 +129,16 @@ function download_projects {
       project_basename=$(echo "$project_address" | perl -ne 'print /([^\/]+)\.git$/')
     fi
 
+    if [[ $project_basename == "busybear-linux" || $project_basename == "riscv-gnu-toolchain" ]]; then
+      local recursive_option=(--recursive)
+    else
+      local recursive_option=()
+    fi
+
     if [[ -d $project_basename ]]; then
       echo "\`$project_basename\` project found; not cloning..."
     else
-      if [[ $project_basename == "busybear-linux" || $project_basename == "riscv-gnu-toolchain" ]]; then
-        git clone --recursive "$project_address"
-      else
-        git clone "$project_address"
-      fi
+      git clone "${recursive_option[@]}" "$project_address"
     fi
   done
 
