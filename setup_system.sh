@@ -33,7 +33,6 @@ c_pigz_input_file_address=https://cdimage.debian.org/debian-cd/current-live/amd6
 
 c_busybear_raw_image_path=$c_projects_dir/busybear-linux/busybear.bin
 c_busybear_prepared_image_path=$c_components_dir/busybear.bin
-c_busybear_image_mount_path=/mnt
 export c_busybear_image_size=20480 # integer; number of megabytes
 c_fedora_image_size=20G
 c_fedora_run_memory=8G
@@ -46,6 +45,7 @@ c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
 c_local_parsec_benchmark_path=$c_projects_dir/parsec-benchmark
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
+c_local_mount_dir=/mnt
 
 c_compiler_binary=$c_projects_dir/riscv-gnu-toolchain/build/bin/riscv64-unknown-linux-gnu-gcc
 c_riscv_firmware_file=share/opensbi/lp64/generic/firmware/fw_dynamic.bin # relative
@@ -63,6 +63,8 @@ The toolchain project is very large. If existing already on the machine, buildin
 
 Prepares the image with the required files (stored in the root home).
 '
+
+v_current_loop_device=
 
 ####################################################################################################
 # MAIN FUNCTIONS
@@ -98,6 +100,27 @@ function cache_sudo {
     kill -0 "$$" || exit
     sudo -nv
   done 2>/dev/null &
+}
+
+function register_exit_hook {
+  function _exit_hook {
+    pkill -f "$(basename "$c_qemu_binary")" || true
+    rm -f "$c_qemu_pidfile"
+
+    rm -f "$c_fedora_temp_expanded_image_path"
+    rm -f "$c_fedora_temp_build_image_path"
+
+    if mountpoint -q "$c_local_mount_dir"; then
+      sudo umount "$c_local_mount_dir"
+    fi
+
+    if [[ -n $v_current_loop_device ]]; then
+      sudo losetup -d "$v_current_loop_device"
+      v_current_loop_device=
+    fi
+  }
+
+  trap _exit_hook EXIT
 }
 
 function add_toolchain_binaries_to_path {
@@ -355,8 +378,6 @@ function prepare_fedora {
     # Extend image
     ####################################
 
-    rm -f "$c_fedora_temp_expanded_image_path"
-
     truncate -s "$c_fedora_image_size" "$c_fedora_temp_expanded_image_path"
     sudo virt-resize -v -x --expand /dev/sda4 "$c_local_fedora_raw_image_path" "$c_fedora_temp_expanded_image_path"
 
@@ -364,27 +385,21 @@ function prepare_fedora {
     # Set passwordless sudo
     ######################################
 
-    local local_mount_dir=/mnt
-
-    local loop_device
-    loop_device=$(sudo losetup --show --find --partscan "$c_fedora_temp_expanded_image_path")
+    v_current_loop_device=$(sudo losetup --show --find --partscan "$c_fedora_temp_expanded_image_path")
 
     # Watch out, must mount partition 4
-    sudo mount "${loop_device}p4" "$local_mount_dir"
+    sudo mount "${v_current_loop_device}p4" "$c_local_mount_dir"
 
     # Sud-bye!
-    sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$local_mount_dir/etc/sudoers"
+    sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$c_local_mount_dir/etc/sudoers"
 
-    sudo umount "$local_mount_dir"
-    sudo losetup -d "$loop_device"
+    sudo umount "$c_local_mount_dir"
+    sudo losetup -d "$v_current_loop_device"
+    v_current_loop_device=
 
     ####################################
     # Start Fedora
     ####################################
-
-    # Make sure there's no zombie around.
-    #
-    pkill -f "$(basename "$c_qemu_binary")" || true
 
     start_fedora "$c_fedora_temp_expanded_image_path"
 
@@ -415,10 +430,6 @@ function prepare_fedora {
 
     sudo virt-sparsify --convert qcow2 --compress "$c_fedora_temp_expanded_image_path" "$c_local_fedora_prepared_image_path"
     sudo chown "$USER": "$c_local_fedora_prepared_image_path"
-
-    # Don't bother with exit traps, but at least delete it on script restart, if present.
-    #
-    rm "$c_fedora_temp_expanded_image_path"
   fi
 }
 
@@ -459,10 +470,6 @@ function build_parsec {
     # image in the appropriate stage, but better to separate stages very clearly.
     #
     echo "Building PARSEC suite in the Fedora VM, and copying it back..."
-
-    # Make sure there's no zombie around.
-    #
-    pkill -f "$(basename "$c_qemu_binary")" || true
 
     cp "$c_local_fedora_prepared_image_path" "$c_fedora_temp_build_image_path"
 
@@ -532,33 +539,31 @@ function prepare_final_image_with_data {
   # Mount image
   ######################################
 
-  local loop_device
-  loop_device=$(sudo losetup --show --find --partscan "$c_busybear_prepared_image_path")
-
-  sudo mount "$loop_device" "$c_busybear_image_mount_path"
+  v_current_loop_device=$(sudo losetup --show --find --partscan "$c_busybear_prepared_image_path")
+  sudo mount "$v_current_loop_device" "$c_local_mount_dir"
 
   ######################################
   # Pigz(-related)
   ######################################
 
-  sudo rsync -av          "$c_pigz_binary_file" "$c_busybear_image_mount_path"/root/
-  sudo rsync -av          "$c_libz_file"        "$c_busybear_image_mount_path"/lib/
-  sudo rsync -av --append "$c_pigz_input_file"  "$c_busybear_image_mount_path"/root/
+  sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
+  sudo rsync -av          "$c_libz_file"        "$c_local_mount_dir"/lib/
+  sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   ######################################
   # PARSEC + Inputs
   ######################################
 
-  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_busybear_image_mount_path"/root/ | grep '/$'
-  sudo rsync -av --info=progress2 --no-inc-recursive --append       "$c_local_parsec_inputs_path"    "$c_busybear_image_mount_path"/root/ | grep '/$'
+  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ | grep '/$'
+  sudo rsync -av --info=progress2 --no-inc-recursive --append       "$c_local_parsec_inputs_path"    "$c_local_mount_dir"/root/ | grep '/$'
 
   ######################################
   # Unmount image
   ######################################
 
-  sudo umount "$c_busybear_image_mount_path"
-
-  sudo losetup -d "$loop_device"
+  sudo umount "$c_local_mount_dir"
+  sudo losetup -d "$v_current_loop_device"
+  v_current_loop_device=
 }
 
 function print_completion_message {
@@ -643,6 +648,7 @@ decode_cmdline_args "$@"
 create_directories
 init_debug_log
 cache_sudo
+register_exit_hook
 
 install_base_packages
 add_toolchain_binaries_to_path
