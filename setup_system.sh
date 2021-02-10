@@ -26,6 +26,9 @@ c_parsec_sim_inputs_address=https://parsec.cs.princeton.edu/download/3.0/parsec-
 c_parsec_native_inputs_address=https://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-native.tar.gz
 c_zlib_repo_address=https://github.com/madler/zlib.git
 c_pigz_repo_address=https://github.com/madler/pigz.git
+# Bash v5.1 (make) has a bug on parallel compilation (see https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=4c2ebbf4b8bc660beb98cc2d845c73375d6e4f50).
+# It can be patched, but it's not worth the hassle.
+c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
 
 # The file_path can be anything, as long as it ends with '.pigz_input', so that it's picked up by the
 # benchmark script.
@@ -44,6 +47,7 @@ c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
 c_local_parsec_benchmark_path=$c_projects_dir/parsec-benchmark
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
+c_bash_binary=$c_projects_dir/$(echo "$c_bash_tarball_address" | perl -ne 'print /([^\/]+)\.tar.\w+$/')/bash
 c_local_mount_dir=/mnt
 
 c_compiler_binary=$c_projects_dir/riscv-gnu-toolchain/build/bin/riscv64-unknown-linux-gnu-gcc
@@ -188,6 +192,12 @@ function download_projects {
 
     wget --output-document=/dev/stdout "$c_parsec_native_inputs_address" |
       tar xz --directory="$c_projects_dir" --transform="s/^parsec-3.0/$(basename "$c_local_parsec_inputs_path")/"
+  fi
+
+  if [[ -d $(dirname "$c_bash_binary") ]]; then
+    echo "Bash project found; not downloading..."
+  else
+    wget --output-document=/dev/stdout "$c_bash_tarball_address" | tar xz --directory="$c_projects_dir"
   fi
 
   # Pigz input
@@ -359,6 +369,22 @@ function build_qemu {
     ./build_pinning_qemu_binary.sh --target=riscv64 --yes
 
     cp "$c_qemu_binary" "$c_components_dir"/
+  fi
+}
+
+function build_bash {
+  cd "$(dirname "$c_bash_binary")"
+
+  if [[ -f $c_bash_binary ]]; then
+    echo "Bash binary found; not compiling..."
+  else
+    # See http://www.linuxfromscratch.org/lfs/view/development/chapter06/bash.html.
+    #
+    # $LFS_TGT is blank, so it's not set, and we're not performing the install, either.
+    #
+    ./configure --host="$(support/config.guess)" CC="$(basename "$c_compiler_binary")" --enable-static-link --without-bash-malloc
+
+    make -j "$(nproc)"
   fi
 }
 
@@ -549,6 +575,13 @@ function prepare_final_image_with_data {
     "$c_local_parsec_inputs_path"/ "$c_local_mount_dir"/root/parsec-benchmark/ |
     grep '/$'
 
+  # Bash (also set as default shell)
+
+  sudo cp "$c_bash_binary" "$c_local_mount_dir"/bin/
+  sudo ln -sf bash "$c_local_mount_dir"/bin/sh
+
+  # Done!
+
   umount_current_image
 }
 
@@ -669,6 +702,7 @@ build_linux_kernel
 build_busybear
 copy_opensbi_firmware
 build_qemu
+build_bash
 
 # This needs to be prepared late, due the QEMU binary dependency.
 prepare_fedora
