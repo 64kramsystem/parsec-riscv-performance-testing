@@ -385,17 +385,12 @@ function prepare_fedora {
     # Set passwordless sudo
     ######################################
 
-    v_current_loop_device=$(sudo losetup --show --find --partscan "$c_fedora_temp_expanded_image_path")
-
-    # Watch out, must mount partition 4
-    sudo mount "${v_current_loop_device}p4" "$c_local_mount_dir"
+    mount_image "$c_fedora_temp_expanded_image_path" 4
 
     # Sud-bye!
     sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$c_local_mount_dir/etc/sudoers"
 
-    sudo umount "$c_local_mount_dir"
-    sudo losetup -d "$v_current_loop_device"
-    v_current_loop_device=
+    umount_current_image
 
     ####################################
     # Start Fedora
@@ -535,35 +530,20 @@ function prepare_final_image_with_data {
     cp "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
   fi
 
-  ######################################
-  # Mount image
-  ######################################
+  mount_image "$c_busybear_prepared_image_path"
 
-  v_current_loop_device=$(sudo losetup --show --find --partscan "$c_busybear_prepared_image_path")
-  sudo mount "$v_current_loop_device" "$c_local_mount_dir"
-
-  ######################################
   # Pigz(-related)
-  ######################################
-
+  #
   sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
   sudo rsync -av          "$c_libz_file"        "$c_local_mount_dir"/lib/
   sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
-  ######################################
   # PARSEC + Inputs
-  ######################################
-
+  #
   sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ | grep '/$'
   sudo rsync -av --info=progress2 --no-inc-recursive --append       "$c_local_parsec_inputs_path"    "$c_local_mount_dir"/root/ | grep '/$'
 
-  ######################################
-  # Unmount image
-  ######################################
-
-  sudo umount "$c_local_mount_dir"
-  sudo losetup -d "$v_current_loop_device"
-  v_current_loop_device=
+  umount_current_image
 }
 
 function print_completion_message {
@@ -638,6 +618,22 @@ function shutdown_fedora {
   while [[ -f $c_qemu_pidfile ]]; do
     sleep 0.5
   done
+}
+
+# $1: image, $2 (optional): partition number
+#
+function mount_image {
+  local image=$1
+  local image_partition=${2:+p$2}
+
+  v_current_loop_device=$(sudo losetup --show --find --partscan "$image")
+  sudo mount "${v_current_loop_device}${image_partition}" "$c_local_mount_dir"
+}
+
+function umount_current_image {
+  sudo umount "$c_local_mount_dir"
+  sudo losetup -d "$v_current_loop_device"
+  v_current_loop_device=
 }
 
 ####################################################################################################
