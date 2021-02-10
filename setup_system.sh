@@ -38,8 +38,7 @@ c_fedora_image_size=20G
 c_fedora_run_memory=8G
 c_local_ssh_port=10000
 c_local_fedora_raw_image_path=$c_projects_dir/$(echo "$c_fedora_image_address" | perl -ne 'print /([^\/]+)\.xz$/')
-c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.qcow2}"
-c_fedora_temp_expanded_image_path=$(dirname "$(mktemp)")/fedora.temp.expanded.raw
+c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.raw}"
 c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
 c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
 c_local_parsec_benchmark_path=$c_projects_dir/parsec-benchmark
@@ -107,7 +106,6 @@ function register_exit_hook {
     pkill -f "$(basename "$c_qemu_binary")" || true
     rm -f "$c_qemu_pidfile"
 
-    rm -f "$c_fedora_temp_expanded_image_path"
     rm -f "$c_fedora_temp_build_image_path"
 
     if mountpoint -q "$c_local_mount_dir"; then
@@ -378,14 +376,15 @@ function prepare_fedora {
     # Extend image
     ####################################
 
-    truncate -s "$c_fedora_image_size" "$c_fedora_temp_expanded_image_path"
-    sudo virt-resize -v -x --expand /dev/sda4 "$c_local_fedora_raw_image_path" "$c_fedora_temp_expanded_image_path"
+    truncate -s "$c_fedora_image_size" "$c_local_fedora_prepared_image_path"
+    sudo virt-resize -v -x --expand /dev/sda4 "$c_local_fedora_raw_image_path" "$c_local_fedora_prepared_image_path"
+    chown "$USER:" "$c_local_fedora_prepared_image_path"
 
     ######################################
     # Set passwordless sudo
     ######################################
 
-    mount_image "$c_fedora_temp_expanded_image_path" 4
+    mount_image "$c_local_fedora_prepared_image_path" 4
 
     # Sud-bye!
     sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$c_local_mount_dir/etc/sudoers"
@@ -396,7 +395,7 @@ function prepare_fedora {
     # Start Fedora
     ####################################
 
-    start_fedora "$c_fedora_temp_expanded_image_path"
+    start_fedora "$c_local_fedora_prepared_image_path"
 
     ####################################
     # Disable long-running service
@@ -420,16 +419,9 @@ function prepare_fedora {
     # This (and other occurrences) could trivially be copied via SSH, but QEMU hangs if so (see note
     # in start_fedora()).
     #
-    mount_image "$c_fedora_temp_expanded_image_path" 4
+    mount_image "$c_local_fedora_prepared_image_path" 4
     sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/home/riscv/ | grep '/$'
-    umount_image
-
-    ####################################
-    # Compress and cleanup
-    ####################################
-
-    sudo virt-sparsify --convert qcow2 --compress "$c_fedora_temp_expanded_image_path" "$c_local_fedora_prepared_image_path"
-    sudo chown "$USER": "$c_local_fedora_prepared_image_path"
+    umount_current_image
   fi
 }
 
@@ -526,7 +518,7 @@ function build_parsec {
 
     mount_image "$c_fedora_temp_build_image_path" 4
     rsync -av --info=progress2 --no-inc-recursive "$c_local_mount_dir"/home/riscv/parsec-benchmark/ "$c_local_parsec_benchmark_path" | grep '/$'
-    umount_image
+    umount_current_image
   fi
 }
 
@@ -549,8 +541,13 @@ function prepare_final_image_with_data {
 
   # PARSEC + Inputs
   #
-  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ | grep '/$'
-  sudo rsync -av --info=progress2 --no-inc-recursive --append       "$c_local_parsec_inputs_path"    "$c_local_mount_dir"/root/ | grep '/$'
+  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git \
+    "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ |
+    grep '/$'
+
+  sudo rsync -av --info=progress2 --no-inc-recursive --append \
+    "$c_local_parsec_inputs_path"/ "$c_local_mount_dir"/root/parsec-benchmark/ |
+    grep '/$'
 
   umount_current_image
 }
