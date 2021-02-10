@@ -421,7 +421,7 @@ function prepare_fedora {
     #
     mount_image "$c_local_fedora_prepared_image_path" 4
     sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/home/riscv/ | grep '/$'
-    umount_image
+    umount_current_image
   fi
 }
 
@@ -518,7 +518,7 @@ function build_parsec {
 
     mount_image "$c_fedora_temp_build_image_path" 4
     rsync -av --info=progress2 --no-inc-recursive "$c_local_mount_dir"/home/riscv/parsec-benchmark/ "$c_local_parsec_benchmark_path" | grep '/$'
-    umount_image
+    umount_current_image
   fi
 }
 
