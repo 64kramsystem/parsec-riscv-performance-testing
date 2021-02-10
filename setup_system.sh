@@ -31,7 +31,8 @@ c_pigz_repo_address=https://github.com/madler/pigz.git
 # benchmark script.
 c_pigz_input_file_address=https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
 
-c_busybear_image=$c_components_dir/busybear.bin
+c_busybear_raw_image_path=$c_projects_dir/busybear-linux/busybear.bin
+c_busybear_prepared_image_path=$c_components_dir/busybear.bin
 c_busybear_image_mount_path=/mnt
 export c_busybear_image_size=5120 # integer; number of megabytes
 c_fedora_image_size=20G
@@ -303,16 +304,14 @@ function build_linux_kernel {
 function build_busybear {
   cd "$c_projects_dir/busybear-linux"
 
-  busybear_image_file=busybear.bin
-
-  if [[ -f $busybear_image_file ]]; then
+  if [[ -f $c_busybear_raw_image_path ]]; then
     echo "Busybear image found; not making/copying..."
   else
     echo 'WATCH OUT!! Busybear may fail without useful messages. If this happens, add `set -x` on top of its `build.sh` script.'
 
     make
 
-    cp "$busybear_image_file" "$c_components_dir"/
+    cp "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
   fi
 }
 
@@ -523,7 +522,7 @@ function copy_data_to_guest_image {
   )
 
   local loop_device
-  loop_device=$(sudo losetup --show --find --partscan "$c_busybear_image")
+  loop_device=$(sudo losetup --show --find --partscan "$c_busybear_prepared_image_path")
 
   sudo mount "$loop_device" "$c_busybear_image_mount_path"
 
