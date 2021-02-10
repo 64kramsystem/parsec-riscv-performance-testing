@@ -415,9 +415,14 @@ function prepare_fedora {
     # Conveniences
     run_fedora_command 'sudo dnf install -y vim pv zstd the_silver_searcher rsync htop'
 
-    tar c --directory "$c_projects_dir" --exclude=parsec-benchmark/.git parsec-benchmark | run_fedora_command "tar xv" | grep '/$'
-
     shutdown_fedora
+
+    # This (and other occurrences) could trivially be copied via SSH, but QEMU hangs if so (see note
+    # in start_fedora()).
+    #
+    mount_image "$c_fedora_temp_expanded_image_path" 4
+    sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/home/riscv/ | grep '/$'
+    umount_image
 
     ####################################
     # Compress and cleanup
@@ -515,9 +520,11 @@ function build_parsec {
       parallel --max-procs=12.5% bin/parsecmgmt -a build -p ::: ${parsec_packages[*]}
     "
 
-    run_fedora_command "tar c parsec-benchmark" | tar xv --directory="$c_projects_dir" | grep '/$'
-
     shutdown_fedora
+
+    mount_image "$c_fedora_temp_build_image_path" 4
+    rsync -av --info=progress2 --no-inc-recursive "$c_local_mount_dir"/home/riscv/parsec-benchmark/ "$c_local_parsec_benchmark_path" | grep '/$'
+    umount_image
   fi
 }
 
