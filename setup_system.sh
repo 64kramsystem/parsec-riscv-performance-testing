@@ -483,7 +483,10 @@ function build_parsec {
       parallel bin/parsecmgmt -a build -p ::: parmacs gsl libjpeg libxml2
     "
 
+    # vips is by far the slowest, so we start compiling it first.
+    #
     local parsec_packages=(
+      parsec.vips
       parsec.blackscholes
       parsec.bodytrack
       parsec.dedup
@@ -493,7 +496,6 @@ function build_parsec {
       parsec.freqmine
       parsec.streamcluster
       parsec.swaptions
-      parsec.vips
       splash2x.barnes
       splash2x.cholesky
       splash2x.fft
