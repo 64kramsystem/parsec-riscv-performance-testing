@@ -1,7 +1,7 @@
 # Input: $1=Number of vCPUs.
 #
 function boot_guest {
-  vcpus=$1
+  local vcpus=$1
 
   "$c_qemu_binary" \
     -display none -daemonize \

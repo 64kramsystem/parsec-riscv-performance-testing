@@ -26,7 +26,10 @@ function find_host_system_configuration_options {
 #
 function exit_system_configuration_reset {
   echo "$v_previous_smt_configuration" | sudo tee /sys/devices/system/cpu/smt/control
-  echo "$v_previous_scaling_governor" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+  if [[ -n $v_smt_on ]]; then
+    echo "$v_previous_scaling_governor" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+  fi
 }
 
 # Returns the sorted list of threads number.
@@ -55,7 +58,7 @@ function prepare_threads_number_list {
   #
   mapfile -t v_thread_numbers_list < <(echo -n "$thread_numbers_list" | sort -n)
 
-  echo "Threads number list: ${v_thread_numbers_list[@]}"
+  echo "Threads number list: ${v_thread_numbers_list[*]}"
 }
 
 # WATCH OUT! If SMT is disabled, all the `/sys/devices/system/cpu/cpu*` files will be still present,
@@ -67,7 +70,10 @@ function prepare_threads_number_list {
 #
 function set_host_system_configuration {
   echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-  echo off | sudo tee /sys/devices/system/cpu/smt/control
+
+  if [[ -n $v_smt_on ]]; then
+    echo off | sudo tee /sys/devices/system/cpu/smt/control
+  fi
 }
 
 function print_completion_message {

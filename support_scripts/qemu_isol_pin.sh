@@ -21,7 +21,8 @@ function find_num_proc_isolcpu {
 # However, procedural logic is simpler and also covers nproc that are not a power of 2.
 #
 function prepare_threads_number_list {
-  local num_proc=$(find_num_proc_isolcpu)
+  local num_proc
+  num_proc=$(find_num_proc_isolcpu)
 
   v_thread_numbers_list=()
   exceeded_host_procs=
@@ -35,16 +36,17 @@ function prepare_threads_number_list {
     v_thread_numbers_list+=("$threads_number")
   done
 
-  echo "Threads number list: ${v_thread_numbers_list[@]}"
+  echo "Threads number list: ${v_thread_numbers_list[*]}"
 }
 
 # Input: $1=Number of vCPUs.
 #
 function boot_guest {
-  vcpus=$1
-  pinning_options=()
+  local vcpus=$1
+  local pinning_options=()
 
-  local num_proc=$(find_num_proc_isolcpu)
+  local num_proc
+  num_proc=$(find_num_proc_isolcpu)
 
   echo "Affinities:"
 

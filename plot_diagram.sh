@@ -7,13 +7,13 @@ set -o errtrace
 shopt -s inherit_errexit
 
 c_debug_log_file=$(basename "$0").log
-c_help='Usage: $(basename "$0") [-h|--help] [-c|--comparison] [-o|--output diagram_file.ext] <input_files...>
+c_help='Usage: $(basename "$0") [-h|--help] [-s|--scale] [-o|--output diagram_file.ext] <input_files...>
 
 Produces a diagram from the specified files, using gnuplot.
 
 If --output is specified, the format is picked up from the diagram file extension (SVG/PNG).
 
-The --comparison version (y-)normalizes and superposes the lines, so that the shape can be directly compared.
+The --scale option vertically scales, and superposes the lines, so that the shape can be directly compared.
 
 Input files are expected to be csv, with the column/values produced by the benchmark script.'
 
@@ -29,7 +29,7 @@ c_line_colors_palette=(
 
 # User-defined
 #
-v_generate_comparison_diagram= # boolean (blank/anything else)
+v_scale_lines=                 # boolean (blank/anything else)
 v_output_file=                 # string
 v_input_files=                 # array
 
@@ -42,15 +42,15 @@ v_image_format=  # string
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hco: --long help,comparison,output: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hso: --long help,scale,output: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
       -h|--help)
         echo "$c_help"
         exit 0 ;;
-      -c|--comparison)
-        v_generate_comparison_diagram=1
+      -s|--scale)
+        v_scale_lines=1
         shift ;;
       -o|--output)
         v_output_file=$2
@@ -192,7 +192,7 @@ plot \\
 #
 #     unset multiplot
 #
-function generate_comparison_diagram {
+function generate_scaled_diagram {
   if [[ ${#v_input_files[@]} -gt ${#c_line_colors_palette[@]} ]]; then
     >&2 echo "No more than ${#c_line_colors_palette[@]} lines supported!"
     exit
@@ -295,8 +295,8 @@ for threads, run_times in sorted(all_run_times.items()):
 decode_cmdline_args "$@"
 init_debug_log
 
-if [[ -z $v_generate_comparison_diagram ]]; then
+if [[ -z $v_scale_lines ]]; then
   generate_standard_diagram
 else
-  generate_comparison_diagram
+  generate_scaled_diagram
 fi
