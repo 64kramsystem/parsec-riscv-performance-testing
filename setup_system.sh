@@ -556,6 +556,8 @@ function build_parsec {
 
 # For simplicity, just run it without checking if the files already exist.
 #
+# Note that libs are better copied rather than rsync'd, since they are often symlinks.
+#
 function prepare_final_image_with_data {
   if [[ ! -f $c_busybear_prepared_image_path ]]; then
     echo "BusyBear prepared image not found, copying..."
@@ -568,7 +570,7 @@ function prepare_final_image_with_data {
   # Pigz(-related)
   #
   sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
-  sudo rsync -av          "$c_libz_file"        "$c_local_mount_dir"/lib/
+  sudo cp -v              "$c_libz_file"        "$c_local_mount_dir"/lib/
   sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   # PARSEC + Inputs
