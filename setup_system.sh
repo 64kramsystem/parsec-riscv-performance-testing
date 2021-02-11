@@ -503,12 +503,18 @@ function build_parsec {
 
     # vips is by far the slowest, so we start compiling it first.
     #
+    # Packages excluded:
+    #
+    # - canneal (ASM)
+    # - raytrace (ASM)
+    # - x264 (ASM)
+    # - facesim (segfaults; has ASM but it's not compiled)
+    #
     local parsec_packages=(
       parsec.vips
       parsec.blackscholes
       parsec.bodytrack
       parsec.dedup
-      parsec.facesim
       parsec.ferret
       parsec.fluidanimate
       parsec.freqmine
