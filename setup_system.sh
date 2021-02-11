@@ -12,6 +12,7 @@ shopt -s inherit_errexit
 
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
 c_projects_dir=$(readlink -f "$(dirname "$0")")/projects
+c_fedora_extracted_libs_dir=$c_projects_dir/libs_fedora_extracted
 
 c_debug_log_file=$(basename "$0").log
 
@@ -85,6 +86,7 @@ function decode_cmdline_args {
 function create_directories {
   mkdir -p "$c_components_dir"
   mkdir -p "$c_projects_dir"
+  mkdir -p "$c_fedora_extracted_libs_dir"
 }
 
 function init_debug_log {
@@ -457,6 +459,16 @@ function copy_opensbi_firmware {
   cp "$c_riscv_firmware_file" "$c_components_dir"/
 }
 
+# One of the libs required by vips can be conveniently copied from Fedora.
+#
+function copy_fedora_riscv_libs {
+    mount_image "$c_local_fedora_prepared_image_path" 4
+
+    sudo cp "$c_local_mount_dir"/lib64/libxml2.so.2 "$c_fedora_extracted_libs_dir"/  | grep '/$'
+
+    umount_current_image
+}
+
 function build_pigz {
   if [[ -f $c_pigz_binary_file ]]; then
     echo "pigz binary found; not compiling/copying..."
@@ -582,6 +594,10 @@ function prepare_final_image_with_data {
   sudo rsync -av --info=progress2 --no-inc-recursive --append \
     "$c_local_parsec_inputs_path"/ "$c_local_mount_dir"/root/parsec-benchmark/ |
     grep '/$'
+
+  # Fedora libs
+
+  sudo cp -v "$c_fedora_extracted_libs_dir"/* "$c_local_mount_dir"/lib/
 
   # Bash (also set as default shell)
 
@@ -716,6 +732,7 @@ build_bash
 prepare_fedora
 
 build_parsec
+copy_fedora_riscv_libs
 build_pigz
 
 prepare_final_image_with_data
