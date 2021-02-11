@@ -12,7 +12,7 @@ shopt -s inherit_errexit
 
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
 c_projects_dir=$(readlink -f "$(dirname "$0")")/projects
-c_fedora_extracted_libs_dir=$c_projects_dir/libs_fedora_extracted
+c_extra_libs_dir=$c_projects_dir/libs_extra
 
 c_debug_log_file=$(basename "$0").log
 
@@ -30,6 +30,7 @@ c_pigz_repo_address=https://github.com/madler/pigz.git
 # Bash v5.1 (make) has a bug on parallel compilation (see https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=4c2ebbf4b8bc660beb98cc2d845c73375d6e4f50).
 # It can be patched, but it's not worth the hassle.
 c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
+c_liblzma_repo_address=https://github.com/xz-mirror/xz.git
 
 # The file_path can be anything, as long as it ends with '.pigz_input', so that it's picked up by the
 # benchmark script.
@@ -56,6 +57,7 @@ c_riscv_firmware_file=share/opensbi/lp64/generic/firmware/fw_dynamic.bin # relat
 c_pigz_input_file=$c_components_dir/$(basename "$c_pigz_input_file_address").pigz_input
 c_pigz_binary_file=$c_projects_dir/pigz/pigz
 c_libz_file=$c_projects_dir/zlib/libz.so.1
+c_liblzma_file=$c_projects_dir/xz/liblzma.so.5
 
 c_help='Usage: $(basename "$0")
 
@@ -86,7 +88,7 @@ function decode_cmdline_args {
 function create_directories {
   mkdir -p "$c_components_dir"
   mkdir -p "$c_projects_dir"
-  mkdir -p "$c_fedora_extracted_libs_dir"
+  mkdir -p "$c_extra_libs_dir"
 }
 
 function init_debug_log {
@@ -145,6 +147,7 @@ function download_projects {
     "$c_parsec_benchmark_address"
     "$c_zlib_repo_address"
     "$c_pigz_repo_address"
+    "$c_liblzma_repo_address"
   )
 
   cd "$c_projects_dir"
@@ -464,7 +467,7 @@ function copy_opensbi_firmware {
 function copy_fedora_riscv_libs {
     mount_image "$c_local_fedora_prepared_image_path" 4
 
-    sudo cp "$c_local_mount_dir"/lib64/libxml2.so.2 "$c_fedora_extracted_libs_dir"/  | grep '/$'
+    sudo cp "$c_local_mount_dir"/lib64/libxml2.so.2 "$c_extra_libs_dir"/  | grep '/$'
 
     umount_current_image
 }
@@ -566,6 +569,75 @@ function build_parsec {
   fi
 }
 
+function build_liblzma {
+  if [[ -f $c_liblzma_file ]]; then
+    echo "liblzma library found; not compiling/copying..."
+  else
+    git -C "$c_projects_dir/xz" checkout v4.999.9beta
+
+    WRITEME: copy to the vm image, and start
+
+    WRITEME: dnf install gettext-devel libtool
+
+    ./autogen.sh
+    # --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-assembler \
+    ./configure
+
+    cd src/liblzma
+
+    make -j "$(nproc)"
+
+    # Note that we change the name here (`.so.0` -> `.so.5`)
+    #
+    run_fedora_command "cat xz/src/liblzma/.libs/liblzma.so.0" > "$c_liblzma_file"
+
+    WRITEME: shutdown
+
+    # YAY!
+    #
+    # https://lists.cs.princeton.edu/pipermail/parsec-users/2008-April/000081.html
+    #
+    cd parsec-benchmark/pkgs/apps/vips/src
+    # Several non-core functionalities are not enabled/compiled, unless the libraries are installed.
+    #
+    ./configure
+    make LDFLAGS=-all-static -j "$(nproc)"
+
+
+    # [PARSEC] Running '
+    # env CXXFLAGS=-I/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/glib/inst/amd64-linux.gcc/include -I/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/zlib/inst/amd64-linux.gcc/include -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20150206 -fexceptions LDFLAGS=-L/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/glib/inst/amd64-linux.gcc/lib -L/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib PKG_CONFIG_PATH=/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/glib/inst/amd64-linux.gcc/lib/pkgconfig:/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/libxml2/inst/amd64-linux.gcc/lib/pkgconfig: LIBS= -lstdc++ /home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/apps/vips/src/configure --disable-shared --disable-cxx --without-fftw3 --without-magick --without-liboil --without-lcms --without-OpenEXR --without-matio --without-pangoft2 --without-tiff --without-jpeg --without-zip --without-png --without-libexif --without-python --without-x --without-perl --without-v4l --without-cimg --enable-threads --build= --host= --prefix=/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/apps/vips/inst/amd64-linux.gcc
+    # ':
+
+    # [PARSEC] Running '
+    # env CXXFLAGS=-I/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/glib/inst/amd64-linux.gcc/include -I/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/zlib/inst/amd64-linux.gcc/include -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20150206 -fexceptions LDFLAGS=-L/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/glib/inst/amd64-linux.gcc/lib -L/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib PKG_CONFIG_PATH=/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/glib/inst/amd64-linux.gcc/lib/pkgconfig:/home/saverio/code/riscv_images/projects/parsec-benchmark/pkgs/libs/libxml2/inst/amd64-linux.gcc/lib/pkgconfig: LIBS= -lstdc++ make -j 32
+    # ':
+
+    WRITME: libxml2
+    ssfe 'cat /home/riscv/parsec-benchmark/pkgs/libs/libxml2/src/.libs/libxml2.so.2' > libs_extra/libxml2.so.2
+    for f in libs_extra/*; do cat $f | ssbyb "cat > /lib/$(basename $f)"; done
+    cat zlib/libz.so | ssbyb "cat > /lib/libz.so.1"
+    ssbyb
+    export HOSTTYPE=riscv64
+    cd parsec-benchmark
+    bin/parsecmgmt -a run -p vips -i simdev -n $(nproc)
+
+#     CC="$c_compiler_binary" ./configure \
+#       --host=x86_64
+# 
+#     make -j "$(nproc)"
+    
+  
+#     CC="$c_compiler_binary" ./configure
+#     make
+# 
+#     cd "$c_projects_dir/pigz"
+# 
+#     make "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib"
+# 
+#     cp "$c_pigz_binary_file" "$c_components_dir"/
+  fi
+}
+
 # For simplicity, just run it without checking if the files already exist.
 #
 # Note that libs are better copied rather than rsync'd, since they are often symlinks.
@@ -595,9 +667,9 @@ function prepare_final_image_with_data {
     "$c_local_parsec_inputs_path"/ "$c_local_mount_dir"/root/parsec-benchmark/ |
     grep '/$'
 
-  # Fedora libs
+  # Extra libs
 
-  sudo cp -v "$c_fedora_extracted_libs_dir"/* "$c_local_mount_dir"/lib/
+  sudo cp -v "$c_extra_libs_dir"/* "$c_local_mount_dir"/lib/
 
   # Bash (also set as default shell)
 
@@ -734,6 +806,7 @@ prepare_fedora
 build_parsec
 copy_fedora_riscv_libs
 build_pigz
+build_liblzma
 
 prepare_final_image_with_data
 
