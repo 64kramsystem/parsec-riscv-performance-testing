@@ -1,5 +1,9 @@
 c_input_type=simlarge
 
+# Crashes with NTHREADS=1
+#
+c_min_threads=2
+
 # Input: $1=Number of threads.
 #
 function compose_benchmark_command {
