@@ -435,6 +435,10 @@ function prepare_fedora {
 
     run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
     run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel rsync'
+    # If vips finds liblzma in the system libraries, it will link dynamically, making it troublesome
+    # to run on other systems. It's possible to compile statically (see https://lists.cs.princeton.edu/pipermail/parsec-users/2008-April/000081.html),
+    # but this solution is simpler.
+    run_fedora_command 'sudo dnf remove -y xz-devel'
     # To replace with xargs once the script is releasable.
     run_fedora_command 'echo "will cite" | parallel --citation || true'
     # Conveniences
@@ -503,12 +507,18 @@ function build_parsec {
 
     # vips is by far the slowest, so we start compiling it first.
     #
+    # Packages excluded:
+    #
+    # - canneal (ASM)
+    # - raytrace (ASM)
+    # - x264 (ASM)
+    # - facesim (segfaults; has ASM but it's not compiled)
+    #
     local parsec_packages=(
       parsec.vips
       parsec.blackscholes
       parsec.bodytrack
       parsec.dedup
-      parsec.facesim
       parsec.ferret
       parsec.fluidanimate
       parsec.freqmine
@@ -550,6 +560,8 @@ function build_parsec {
 
 # For simplicity, just run it without checking if the files already exist.
 #
+# Note that libs are better copied rather than rsync'd, since they are often symlinks.
+#
 function prepare_final_image_with_data {
   if [[ ! -f $c_busybear_prepared_image_path ]]; then
     echo "BusyBear prepared image not found, copying..."
@@ -562,7 +574,7 @@ function prepare_final_image_with_data {
   # Pigz(-related)
   #
   sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
-  sudo rsync -av          "$c_libz_file"        "$c_local_mount_dir"/lib/
+  sudo cp -v              "$c_libz_file"        "$c_local_mount_dir"/lib/
   sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   # PARSEC + Inputs
