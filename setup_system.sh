@@ -435,6 +435,10 @@ function prepare_fedora {
 
     run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
     run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel rsync'
+    # If vips finds liblzma in the system libraries, it will link dynamically, making it troublesome
+    # to run on other systems. It's possible to compile statically (see https://lists.cs.princeton.edu/pipermail/parsec-users/2008-April/000081.html),
+    # but this solution is simpler.
+    run_fedora_command 'sudo dnf remove -y xz-devel'
     # To replace with xargs once the script is releasable.
     run_fedora_command 'echo "will cite" | parallel --citation || true'
     # Conveniences
