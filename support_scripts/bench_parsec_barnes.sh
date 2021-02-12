@@ -1,5 +1,9 @@
 c_input_type=simlarge
 
+# Hung on 64 threads
+#
+c_max_threads=32
+
 # Input: $1=Number of threads.
 #
 function compose_benchmark_command {
