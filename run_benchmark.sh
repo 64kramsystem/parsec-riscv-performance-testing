@@ -29,7 +29,7 @@ c_qemu_binary=$c_components_dir/qemu-system-riscv64
 #
 c_guest_memory=8G
 c_guest_image_source=$c_components_dir/busybear.bin
-c_guest_image_temp=$c_temp_dir/busybear.temp.qcow2
+c_guest_image_temp=$c_temp_dir/busybear.temp.qcow2 # must be qcow2
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
@@ -132,7 +132,7 @@ function register_exit_handlers {
 
     if [[ -f $c_qemu_pidfile ]]; then
       pkill -F "$c_qemu_pidfile"
-      rm "$c_qemu_pidfile"
+      rm -f "$c_qemu_pidfile"
     fi
   }' EXIT
 }
@@ -154,7 +154,7 @@ function run_benchmark {
       command_output=$(run_remote_command "$benchmark_command")
 
       local run_walltime
-      run_walltime=$(echo "$command_output" | perl -ne 'print /^ROI time measured: (\d+)[.,](\d+)s/')
+      run_walltime=$(echo  "$command_output" | perl -ne 'print /^ROI time measured: (\d+[.,]\d+)s/')
 
       if [[ -z $run_walltime ]]; then
         >&2 echo "Walltime message not found!"
