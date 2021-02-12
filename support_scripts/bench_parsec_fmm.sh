@@ -7,6 +7,6 @@ function compose_benchmark_command {
 
   echo "
     cd parsec-benchmark &&
-    HOSTTYPE=riscv64 bin/parsecmgmt -a run -p blackscholes -i $c_input_type -n $threads
+    HOSTTYPE=riscv64 bin/parsecmgmt -a run -p splash2x.fmm -i $c_input_type -n $threads
   "
 }
