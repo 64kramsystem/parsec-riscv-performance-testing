@@ -10,7 +10,7 @@ shopt -s inherit_errexit
 # VARIABLES/CONSTANTS
 ####################################################################################################
 
-c_min_threads=2
+c_min_threads=1
 c_max_threads=128
 
 c_ssh_user=root
