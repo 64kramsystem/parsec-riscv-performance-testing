@@ -1,5 +1,9 @@
 c_input_type=simlarge
 
+# Hung on 128 threads
+#
+c_max_threads=64
+
 # Input: $1=Number of threads.
 #
 function compose_benchmark_command {
@@ -7,6 +11,6 @@ function compose_benchmark_command {
 
   echo "
     cd parsec-benchmark &&
-    HOSTTYPE=riscv64 bin/parsecmgmt -a run -p blackscholes -i $c_input_type -n $threads
+    HOSTTYPE=riscv64 bin/parsecmgmt -a run -p splash2x.ocean_ncp -i $c_input_type -n $threads
   "
 }
