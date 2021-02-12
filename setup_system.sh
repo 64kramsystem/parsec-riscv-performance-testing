@@ -5,6 +5,7 @@ set -o errexit
 set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s globstar
 
 ####################################################################################################
 # VARIABLES/CONSTANTS
@@ -553,7 +554,11 @@ function build_parsec {
     shutdown_fedora
 
     mount_image "$c_fedora_temp_build_image_path" 4
-    rsync -av --info=progress2 --no-inc-recursive "$c_local_mount_dir"/home/riscv/parsec-benchmark/ "$c_local_parsec_benchmark_path" | grep '/$'
+
+    rsync -av --info=progress2 --no-inc-recursive --relative \
+      "$c_local_mount_dir"/home/riscv/parsec-benchmark/./**/bin/* "$c_local_parsec_benchmark_path" |
+      grep '/$'
+
     umount_current_image
   fi
 }
