@@ -306,6 +306,122 @@ function prepare_busybear {
   #
   perl -i -pe "s/^IMAGE_SIZE=\K.*/$c_busybear_image_size/" conf/busybear.config
 
+  perl -i -pe "s/^CROSS_COMPILE=\K.*/$(basename "${c_compiler_binary%gcc}")/" conf/busybear.config
+
+  local patch_file
+  patch_file=$(dirname "$(mktemp)")/busybox_glibc_fix.patch
+
+  # The Debian riscv toolchain, compared to the official one:
+  #
+  # - has a more recent glibc
+  # - has only a few libraries
+  #
+  # so we need to make a few changes.
+
+  # It'd be great to use the Debian-provided RISC-V toolchain, but it's too limited:
+  #
+  # - libcrypt is missing
+  # - libssp is missing (or the stack protection is just not supported, and needs to be disabled)
+  # - other issues with `__vsnprintf_chk`
+  # - who knows what else
+  #
+  # Dropbear patch (libcrypt is required), but this disables password auth, it seems.
+  #
+  #     perl -i -pe "s/^#define DROPBEAR_SVR_PASSWORD_AUTH \K.*/0/" default_options.h
+  #
+  # General script changes:
+  #
+  #     c_compiler_binary=riscv64-linux-gnu-gcc
+  #     apt install -y gcc-riscv64-linux-gnu libc6-dev-riscv64-cross
+  #     ln -sf stubs-lp64d.h /usr/riscv64-linux-gnu/include/gnu/stubs-lp64.h
+
+  if ! grep -q "$patch_file" scripts/build.sh; then
+    # Dropbear changes
+    #
+    # The dropbear config.guess is old (see https://github.com/michaeljclark/busybear-linux/issues/6).
+    # Also, there's no libcrypt, so we just disable authentication.
+    #
+    sed -i '/cd build\/dropbear-/ a \
+      wget -O config.guess '\''https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'\''\
+      wget -O config.sub   '\''https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'\''\
+    ' scripts/build.sh
+
+    # Busybox change
+    #
+    # The default BB busybox version has an issue with glibc 2.31 (deprecation of `stime()`).
+    # This is an adjusted patch of the official one (see https://git.busybox.net/busybox/patch/?id=d3539be8f27b8cbfdfee460fe08299158f08bcd9)
+    #
+    sed -i "/cd build\/busybox-/ a patch -p 1 < $patch_file" scripts/build.sh
+
+    cat > "$patch_file" << 'DIFF'
+diff --git i/coreutils/date.c w/coreutils/date.c
+index 9cbc730..589198e 100644
+--- i/coreutils/date.c
++++ w/coreutils/date.c
+@@ -279,6 +279,9 @@ int date_main(int argc UNUSED_PARAM, char **argv)
+ 		time(&ts.tv_sec);
+ #endif
+ 	}
++#if !ENABLE_FEATURE_DATE_NANO
++	ts.tv_nsec = 0;
++#endif
+ 	localtime_r(&ts.tv_sec, &tm_time);
+ 
+ 	/* If date string is given, update tm_time, and maybe set date */
+@@ -301,9 +304,10 @@ int date_main(int argc UNUSED_PARAM, char **argv)
+ 		if (date_str[0] != '@')
+ 			tm_time.tm_isdst = -1;
+ 		ts.tv_sec = validate_tm_time(date_str, &tm_time);
++		ts.tv_nsec = 0;
+ 
+ 		/* if setting time, set it */
+-		if ((opt & OPT_SET) && stime(&ts.tv_sec) < 0) {
++		if ((opt & OPT_SET) && clock_settime(CLOCK_REALTIME, &ts) < 0) {
+ 			bb_perror_msg("can't set date");
+ 		}
+ 	}
+diff --git i/libbb/missing_syscalls.c w/libbb/missing_syscalls.c
+index 87cf59b..dc40d91 100644
+--- i/libbb/missing_syscalls.c
++++ w/libbb/missing_syscalls.c
+@@ -15,14 +15,6 @@ pid_t getsid(pid_t pid)
+ 	return syscall(__NR_getsid, pid);
+ }
+ 
+-int stime(const time_t *t)
+-{
+-	struct timeval tv;
+-	tv.tv_sec = *t;
+-	tv.tv_usec = 0;
+-	return settimeofday(&tv, NULL);
+-}
+-
+ int sethostname(const char *name, size_t len)
+ {
+ 	return syscall(__NR_sethostname, name, len);
+diff --git i/util-linux/rdate.c w/util-linux/rdate.c
+index 70f829e..e8ce069 100644
+--- i/util-linux/rdate.c
++++ w/util-linux/rdate.c
+@@ -95,9 +95,13 @@ int rdate_main(int argc UNUSED_PARAM, char **argv)
+ 	if (!(flags & 2)) { /* no -p (-s may be present) */
+ 		if (time(NULL) == remote_time)
+ 			bb_error_msg("current time matches remote time");
+-		else
+-			if (stime(&remote_time) < 0)
++		else {
++			struct timespec ts;
++			ts.tv_sec = remote_time;
++			ts.tv_nsec = 0;
++			if (clock_settime(CLOCK_REALTIME, &ts) < 0)
+ 				bb_perror_msg_and_die("can't set time of day");
++    }
+ 	}
+ 
+ 	if (flags != 1) /* not lone -s */
+DIFF
+  fi
+
   # Correct the networking to use QEMU's user networking. Busybear's default networking setup (bridging)
   # is overkill and generally not working.
   #
