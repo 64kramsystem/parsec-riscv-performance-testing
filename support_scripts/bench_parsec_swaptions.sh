@@ -1,4 +1,14 @@
+# The help is wrong; it states `-ns [number of swaptions (should be > number of threads]`, however,
+# it's actually `ns >= threads`.
+#
+# The `native` dataset sets `-ns 128`, `simlarge` sets `-ns 64`.
+#
 c_input_type=simlarge
+
+# In order to test with 128 threads, the `native` input is required, however, that makes the 1-thread
+# run way too long.
+#
+c_max_threads=64
 
 # The benchmark accepts only threads == 2ⁿ.
 #
