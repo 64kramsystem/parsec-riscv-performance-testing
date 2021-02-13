@@ -164,7 +164,7 @@ function download_projects {
     if [[ -d $project_basename ]]; then
       echo "\`$project_basename\` project found; not cloning..."
     else
-      git clone "${recursive_option[@]}" "$project_address"
+      git clone "${recursive_option[@]}" "$project_address" "$project_basename"
     fi
   done
 
