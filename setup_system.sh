@@ -55,7 +55,6 @@ c_compiler_binary=$c_projects_dir/riscv-gnu-toolchain/build/bin/riscv64-unknown-
 c_riscv_firmware_file=share/opensbi/lp64/generic/firmware/fw_dynamic.bin # relative
 c_pigz_input_file=$c_components_dir/$(basename "$c_pigz_input_file_address").pigz_input
 c_pigz_binary_file=$c_projects_dir/pigz/pigz
-c_libz_file=$c_projects_dir/zlib/libz.so.1
 
 c_help='Usage: $(basename "$0")
 
@@ -476,7 +475,9 @@ function build_pigz {
     make -j "$(nproc)"
 
     cd "$c_projects_dir/pigz"
-
+    git checkout Makefile
+    # Could also set -static in LDFLAGS, but keep it targeted.
+    perl -i -pe 's/(-o pigz pigz.o )/-static $1/' Makefile
     make "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib" -j "$(nproc)"
   fi
 }
@@ -581,7 +582,6 @@ function prepare_final_image_with_data {
   # Pigz(-related)
   #
   sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
-  sudo cp -v              "$c_libz_file"        "$c_local_mount_dir"/lib/
   sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   # PARSEC + Inputs
