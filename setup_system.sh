@@ -473,11 +473,11 @@ function build_pigz {
     # For the zlib project included in the RISC-V toolchain, append `--host=x86_64`.
     #
     CC="$c_compiler_binary" ./configure
-    make
+    make -j "$(nproc)"
 
     cd "$c_projects_dir/pigz"
 
-    make "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib"
+    make "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib" -j "$(nproc)"
   fi
 }
 
