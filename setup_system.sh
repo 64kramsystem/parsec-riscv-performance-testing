@@ -131,7 +131,7 @@ function add_toolchain_binaries_to_path {
 
 function install_base_packages {
   sudo apt update
-  sudo apt install -y git build-essential sshpass pigz gnuplot libguestfs-tools
+  sudo apt install -y git build-essential flex sshpass pigz gnuplot libguestfs-tools
 }
 
 function download_projects {
