@@ -478,8 +478,6 @@ function build_pigz {
     cd "$c_projects_dir/pigz"
 
     make "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib"
-
-    cp "$c_pigz_binary_file" "$c_components_dir"/
   fi
 }
 
