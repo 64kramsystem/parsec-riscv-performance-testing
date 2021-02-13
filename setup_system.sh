@@ -498,12 +498,14 @@ function build_parsec {
 
     start_fedora "$c_fedora_temp_build_image_path"
 
-    # Some packages depend on zlib, so we build it first.
+    # Build packages without dependencies first. Once, an error occurred while building libxml2 in parallel
+    # with gsl and others, so for safety, gsl and libxml2 are built serially.
     #
     run_fedora_command "
       cd parsec-benchmark &&
-      bin/parsecmgmt -a build -p zlib &&
-      parallel bin/parsecmgmt -a build -p ::: parmacs gsl libjpeg libxml2
+      parallel bin/parsecmgmt -a build -p ::: zlib parmacs libjpeg &&
+      bin/parsecmgmt -a build -p libxml2 &&
+      bin/parsecmgmt -a build -p gsl
     "
 
     # vips is by far the slowest, so we start compiling it first.
