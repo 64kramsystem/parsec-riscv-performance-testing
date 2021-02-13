@@ -89,6 +89,16 @@ function prepare_run_image_metadata {
   # since the partition flags (e.g. `boot) are not provided.
 }
 
+function register_exit_hook {
+  function _exit_hook {
+    if [[ -n $v_use_temp_image ]]; then
+      rm -f "$v_run_image"
+    fi
+  }
+
+  trap _exit_hook EXIT
+}
+
 function run_qemu {
   "$c_qemu_binary" \
     -nographic \
@@ -109,4 +119,5 @@ function run_qemu {
 
 decode_cmdline_options "$@"
 prepare_run_image_metadata
+register_exit_hook
 run_qemu
