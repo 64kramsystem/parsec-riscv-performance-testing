@@ -149,8 +149,10 @@ function download_projects {
   cd "$c_projects_dir"
 
   for project_address in "${project_addresses[@]}"; do
+    local project_basename
+
     if [[ $project_address == *"parsec-benchmark-tweaked"* ]]; then
-      project_basename=parsec-benchmark
+      project_basename=$(basename "$c_local_parsec_benchmark_path")
     else
       project_basename=$(echo "$project_address" | perl -ne 'print /([^\/]+)\.git$/')
     fi
