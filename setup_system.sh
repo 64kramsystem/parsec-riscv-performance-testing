@@ -33,7 +33,7 @@ c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
 
 # The file_path can be anything, as long as it ends with '.pigz_input', so that it's picked up by the
 # benchmark script.
-c_pigz_input_file_address=https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
+c_pigz_input_file_address=https://cdimage.debian.org/mirror/cdimage/archive/10.7.0-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
 
 c_busybear_raw_image_path=$c_projects_dir/busybear-linux/busybear.bin
 c_busybear_prepared_image_path=$c_components_dir/busybear.bin
