@@ -131,7 +131,7 @@ function add_toolchain_binaries_to_path {
 
 function install_base_packages {
   sudo apt update
-  sudo apt install -y git build-essential sshpass pigz gnuplot libguestfs-tools
+  sudo apt install -y git build-essential flex sshpass pigz gnuplot libguestfs-tools
 }
 
 function download_projects {
@@ -259,7 +259,7 @@ function prepare_linux_kernel {
  	default "8"
 DIFF
 
-  make CC="$c_compiler_binary" ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- defconfig
+  make CC="$c_compiler_binary" ARCH=riscv CROSS_COMPILE="$(basename "${c_compiler_binary%gcc}")" defconfig
 
   # Changes:
   #
@@ -344,7 +344,7 @@ function build_linux_kernel {
   if [[ -f $linux_kernel_file ]]; then
     echo "Compiled Linux kernel found; not compiling/copying..."
   else
-    make ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- -j "$(nproc)"
+    make ARCH=riscv CROSS_COMPILE="$(basename "${c_compiler_binary%gcc}")" -j "$(nproc)"
 
     cp "$linux_kernel_file" "$c_components_dir"/
   fi
