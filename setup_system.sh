@@ -642,7 +642,10 @@ function start_fedora {
 
   while ! nc -z localhost "$c_local_ssh_port"; do sleep 1; done
 
-  run_fedora_command -o ConnectTimeout=30 exit
+  # The default timeout (the system one) is long. 90 seconds should be more than enough also for relatively
+  # slow hosts, but longer timeouts implies that the host is too slow, or that there is a problem.
+  #
+  run_fedora_command -o ConnectTimeout=90 exit
 
   # Something's odd going on here. One minute or two into the installation of the development packages,
   # the VM connection would drop, causing dnf to fail, and the port on the host to stay open, but without
