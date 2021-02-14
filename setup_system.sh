@@ -476,10 +476,8 @@ function build_pigz {
     make -j "$(nproc)"
 
     cd "$c_projects_dir/pigz"
-    git checkout Makefile
-    # Could also set -static in LDFLAGS, but keep it targeted.
-    perl -i -pe 's/(-o pigz pigz.o )/-static $1/' Makefile
-    make "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib" -j "$(nproc)"
+
+    make "CC=$c_compiler_binary LDFLAGS=-static -I $c_projects_dir/zlib -L $c_projects_dir/zlib" -j "$(nproc)"
   fi
 }
 
