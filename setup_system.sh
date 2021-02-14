@@ -220,7 +220,7 @@ function build_toolchain {
   cd "$c_projects_dir/riscv-gnu-toolchain"
 
   ./configure --prefix="$PWD/build"
-  make linux
+  make -j "$(nproc)" linux
 }
 
 # This step is required by Busybear; see https://github.com/michaeljclark/busybear-linux/issues/10.
