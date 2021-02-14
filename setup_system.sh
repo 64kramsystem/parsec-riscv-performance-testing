@@ -110,7 +110,11 @@ function register_exit_hook {
 
     rm -f "$c_fedora_temp_build_image_path"
 
-    umount_current_image
+    # On exit, we don't care about async; see umount_image().
+    #
+    if sudo mountpoint -q "$c_local_mount_dir"; then
+      sudo guestunmount -q "$c_local_mount_dir"
+    fi
   }
 
   trap _exit_hook EXIT
@@ -408,7 +412,7 @@ function prepare_fedora {
     # Sud-bye!
     sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$c_local_mount_dir/etc/sudoers"
 
-    umount_current_image
+    umount_image "$c_local_fedora_prepared_image_path"
 
     ####################################
     # Start Fedora
@@ -444,7 +448,7 @@ function prepare_fedora {
     #
     mount_image "$c_local_fedora_prepared_image_path" 4
     sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/home/riscv/ | grep '/$'
-    umount_current_image
+    umount_image "$c_local_fedora_prepared_image_path"
   fi
 }
 
@@ -557,7 +561,7 @@ function build_parsec {
       rsync -av --info=progress2 --no-inc-recursive --relative ./ext/**/bin ./pkgs/**/bin "$c_local_parsec_benchmark_path"
     "
 
-    umount_current_image
+    umount_image "$c_fedora_temp_build_image_path"
   fi
 }
 
@@ -596,7 +600,7 @@ function prepare_final_image_with_data {
 
   # Done!
 
-  umount_current_image
+  umount_image "$c_busybear_prepared_image_path"
 }
 
 function print_completion_message {
@@ -686,9 +690,21 @@ function mount_image {
   sudo guestmount -a "$image" -m "$block_device" "$c_local_mount_dir"
 }
 
-function umount_current_image {
+function umount_image {
+  local image=$1
+
   if sudo mountpoint -q "$c_local_mount_dir"; then
-    sudo guestunmount "$c_local_mount_dir"
+    # The libguestfs stack is functionally poor.
+    # Unmounting (also via umount), causes an odd `fuse: mountpoint is not empty` error; the guestunmount
+    # help seems to acknowledge this (ie. retries option), so we don't display errors.
+    # Additionally, on unmount, the sync is tentative, so need to manually check that the file is closed.
+    #
+    sudo guestunmount -q "$c_local_mount_dir"
+
+    # Just ignore the gvfs warning.
+    while [[ -n $(sudo lsof -e "$XDG_RUNTIME_DIR/gvfs" "$1" 2> /dev/null) ]]; do
+      sleep 0.5
+    done
   fi
 }
 
