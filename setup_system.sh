@@ -656,10 +656,9 @@ function start_fedora {
   run_fedora_command -o ConnectTimeout=90 exit
 
   # Something's odd going on here. One minute or two into the installation of the development packages,
-  # the VM connection would drop, causing dnf to fail, and the port on the host to stay open, but without
-  # the SSH service starting the handshake. This points either to the QEMU networking having some issue,
-  # or to some internal Fedora service dropping the connection, although the latter seems unlikely,
-  # as repeated connection to the port shouldn't prevent the problem it to happen.
+  # the VM connection drops, causing dnf to fail, while the port on the host stays open, but without
+  # the SSH service starting the handshake. The guest prints kernel errors which explicitly mention
+  # a bug, so there must be one across the stack.
   #
   set +x
   {
