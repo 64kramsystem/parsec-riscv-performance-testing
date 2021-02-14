@@ -202,7 +202,7 @@ function run_remote_command {
 function wait_guest_online {
   while ! nc -z localhost "$c_ssh_port"; do sleep 1; done
 
-  run_remote_command -o ConnectTimeout=30 exit
+  run_remote_command -o ConnectTimeout=90 exit
 }
 
 # The guest may not (for RISC-V, it won't) respond to an ACPI shutdown, so the QEMU monitor strategy
