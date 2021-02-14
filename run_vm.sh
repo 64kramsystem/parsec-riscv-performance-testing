@@ -23,7 +23,7 @@ c_help="Usage: $(basename "$0") [-n|--no-temp] <image> [<boot_block_device>]
 
 Examples:
 
-    $(basename "$0") components/busybear.bin
+    $(basename "$0") components/busybear.qcow2
     $(basename "$0") projects/Fedora-Minimal-Rawhide-20200108.n.0-sda.raw /dev/vda4
 "
 

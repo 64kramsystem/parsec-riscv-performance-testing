@@ -28,7 +28,7 @@ c_qemu_binary=$c_components_dir/qemu-system-riscv64
 # startup.
 #
 c_guest_memory=8G
-c_guest_image_source=$c_components_dir/busybear.bin
+c_guest_image_source=$c_components_dir/busybear.qcow2
 c_guest_image_temp=$c_temp_dir/busybear.temp.qcow2 # must be qcow2
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
