@@ -206,6 +206,9 @@ function download_projects {
   fi
 }
 
+# In theory, the Ubuntu-provided toolchain could be used, but it lacks some libraries (e.g. libcrypt),
+# which make the setup complicated.
+#
 function build_toolchain {
   sudo apt install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk \
            bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat1-dev
@@ -352,6 +355,9 @@ function build_busybear {
   fi
 }
 
+# Using the Ubuntu-provided QEMU for preparing Fedora would make the script cleaner, but it hangs on
+# boot (20.04 ships QEMU 4.2).
+#
 function build_qemu {
   cd "$c_projects_dir/qemu-pinning"
 
