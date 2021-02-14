@@ -5,7 +5,6 @@ set -o errexit
 set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
-shopt -s globstar
 
 ####################################################################################################
 # VARIABLES/CONSTANTS
@@ -68,8 +67,6 @@ The toolchain project is very large. If existing already on the machine, buildin
 Prepares the image with the required files (stored in the root home).
 '
 
-v_current_loop_device=
-
 ####################################################################################################
 # MAIN FUNCTIONS
 ####################################################################################################
@@ -113,14 +110,7 @@ function register_exit_hook {
 
     rm -f "$c_fedora_temp_build_image_path"
 
-    if mountpoint -q "$c_local_mount_dir"; then
-      sudo umount "$c_local_mount_dir"
-    fi
-
-    if [[ -n $v_current_loop_device ]]; then
-      sudo losetup -d "$v_current_loop_device"
-      v_current_loop_device=
-    fi
+    umount_current_image
   }
 
   trap _exit_hook EXIT
@@ -557,9 +547,15 @@ function build_parsec {
 
     mount_image "$c_fedora_temp_build_image_path" 4
 
-    rsync -av --info=progress2 --no-inc-recursive --relative \
-      "$c_local_mount_dir"/home/riscv/parsec-benchmark/./**/bin/* "$c_local_parsec_benchmark_path" |
-      grep '/$'
+    # Will include also other directories matching 'bin', but they won't be re-synced.
+    # We can't just `sudo rsync **/bin`, because the glob is expanded before sudo, and it won't find
+    # anything, due to permissions.
+    #
+    sudo bash -c "
+      shopt -s globstar
+      cd $c_local_mount_dir/home/riscv/parsec-benchmark
+      rsync -av --info=progress2 --no-inc-recursive --relative ./ext/**/bin ./pkgs/**/bin "$c_local_parsec_benchmark_path"
+    "
 
     umount_current_image
   fi
@@ -685,16 +681,15 @@ function shutdown_fedora {
 #
 function mount_image {
   local image=$1
-  local image_partition=${2:+p$2}
+  local block_device=/dev/sda${2:-}
 
-  v_current_loop_device=$(sudo losetup --show --find --partscan "$image")
-  sudo mount "${v_current_loop_device}${image_partition}" "$c_local_mount_dir"
+  sudo guestmount -a "$image" -m "$block_device" "$c_local_mount_dir"
 }
 
 function umount_current_image {
-  sudo umount "$c_local_mount_dir"
-  sudo losetup -d "$v_current_loop_device"
-  v_current_loop_device=
+  if sudo mountpoint -q "$c_local_mount_dir"; then
+    sudo guestunmount "$c_local_mount_dir"
+  fi
 }
 
 ####################################################################################################
