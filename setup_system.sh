@@ -5,7 +5,6 @@ set -o errexit
 set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
-shopt -s globstar
 
 ####################################################################################################
 # VARIABLES/CONSTANTS
@@ -36,15 +35,15 @@ c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
 # benchmark script.
 c_pigz_input_file_address=https://cdimage.debian.org/mirror/cdimage/archive/10.7.0-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
 
+# See note in prepare_fedora() about the iamge formats.
+c_working_images_size=20G
 c_busybear_raw_image_path=$c_projects_dir/busybear-linux/busybear.bin
-c_busybear_prepared_image_path=$c_components_dir/busybear.bin
-export c_busybear_image_size=20480 # integer; number of megabytes
-c_fedora_image_size=20G
+c_busybear_prepared_image_path=$c_components_dir/busybear.qcow2
 c_fedora_run_memory=8G
 c_local_ssh_port=10000
 c_local_fedora_raw_image_path=$c_projects_dir/$(echo "$c_fedora_image_address" | perl -ne 'print /([^\/]+)\.xz$/')
-c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.raw}"
-c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
+c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepared.qcow2}"
+c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.qcow2
 c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
 c_local_parsec_benchmark_path=$c_projects_dir/parsec-benchmark
 c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
@@ -67,8 +66,6 @@ The toolchain project is very large. If existing already on the machine, buildin
 
 Prepares the image with the required files (stored in the root home).
 '
-
-v_current_loop_device=
 
 ####################################################################################################
 # MAIN FUNCTIONS
@@ -113,13 +110,10 @@ function register_exit_hook {
 
     rm -f "$c_fedora_temp_build_image_path"
 
-    if mountpoint -q "$c_local_mount_dir"; then
-      sudo umount "$c_local_mount_dir"
-    fi
-
-    if [[ -n $v_current_loop_device ]]; then
-      sudo losetup -d "$v_current_loop_device"
-      v_current_loop_device=
+    # On exit, we don't care about async; see umount_image().
+    #
+    if sudo mountpoint -q "$c_local_mount_dir"; then
+      sudo guestunmount -q "$c_local_mount_dir"
     fi
   }
 
@@ -302,11 +296,6 @@ function prepare_busybear {
 
   cd "$c_projects_dir/busybear-linux"
 
-  # 100 MB ought to be enough for everybody, but raise it to $c_busybear_image_size anyway.
-  # IMAGE_SIZE is the `count` of a `dd bs=1M` (which actually accepts size suffixes).
-  #
-  perl -i -pe "s/^IMAGE_SIZE=\K.*/$c_busybear_image_size/" conf/busybear.config
-
   # Correct the networking to use QEMU's user networking. Busybear's default networking setup (bridging)
   # is overkill and generally not working.
   #
@@ -393,6 +382,14 @@ function build_bash {
 
 # Depends on QEMU.
 #
+# Using raw as image format [for the prepare image] caused a nutty issue on slow disks (e.g. running
+# in a VM or on a flash key); on Fedora's boot, some services would take a very long time (more than
+# a few minutes), causing on the host a very large amount of kworker(flush) activity. Placing the image
+# on a fast disk or on /run/user/$ID (which is a tmpfs, therefore, partially in memory), or using a
+# qcow2 diff image, doesn't manifest the problem.
+# It's not clear what this is, as the difference in speed doesn't justify the two orders of magnitude
+# of difference, but it's certainly due to some frantic write activity.
+#
 function prepare_fedora {
   echo "Preparing Fedora..."
 
@@ -402,12 +399,16 @@ function prepare_fedora {
     echo "Prepared fedora image found; not processing..."
   else
     ####################################
-    # Extend image
+    # Create extend image
     ####################################
 
-    truncate -s "$c_fedora_image_size" "$c_local_fedora_prepared_image_path"
+    # Using a backing image and setting the size is allowed by qemu-img, and there's no mention in the
+    # manpage against doing so. But it causes crashes on the guest :rolling_eyes:.
+    #
+    # qemu-img create -f qcow2 -b "$c_local_fedora_raw_image_path" "$c_local_fedora_prepared_image_path" "$c_working_images_size"
+
+    qemu-img create -f qcow2 "$c_local_fedora_prepared_image_path" "$c_working_images_size"
     sudo virt-resize -v -x --expand /dev/sda4 "$c_local_fedora_raw_image_path" "$c_local_fedora_prepared_image_path"
-    chown "$USER:" "$c_local_fedora_prepared_image_path"
 
     ######################################
     # Set passwordless sudo
@@ -418,7 +419,7 @@ function prepare_fedora {
     # Sud-bye!
     sudo sed -i '/%wheel.*NOPASSWD: ALL/ s/^# //' "$c_local_mount_dir/etc/sudoers"
 
-    umount_current_image
+    umount_image "$c_local_fedora_prepared_image_path"
 
     ####################################
     # Start Fedora
@@ -454,7 +455,7 @@ function prepare_fedora {
     #
     mount_image "$c_local_fedora_prepared_image_path" 4
     sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/home/riscv/ | grep '/$'
-    umount_current_image
+    umount_image "$c_local_fedora_prepared_image_path"
   fi
 }
 
@@ -494,7 +495,7 @@ function build_parsec {
     #
     echo "Building PARSEC suite in the Fedora VM, and copying it back..."
 
-    cp "$c_local_fedora_prepared_image_path" "$c_fedora_temp_build_image_path"
+    qemu-img create -f qcow2 -b "$c_local_fedora_prepared_image_path" "$c_fedora_temp_build_image_path"
 
     start_fedora "$c_fedora_temp_build_image_path"
 
@@ -557,11 +558,17 @@ function build_parsec {
 
     mount_image "$c_fedora_temp_build_image_path" 4
 
-    rsync -av --info=progress2 --no-inc-recursive --relative \
-      "$c_local_mount_dir"/home/riscv/parsec-benchmark/./**/bin/* "$c_local_parsec_benchmark_path" |
-      grep '/$'
+    # Will include also other directories matching 'bin', but they won't be re-synced.
+    # We can't just `sudo rsync **/bin`, because the glob is expanded before sudo, and it won't find
+    # anything, due to permissions.
+    #
+    sudo bash -c "
+      shopt -s globstar
+      cd $c_local_mount_dir/home/riscv/parsec-benchmark
+      rsync -av --info=progress2 --no-inc-recursive --relative ./ext/**/bin ./pkgs/**/bin "$c_local_parsec_benchmark_path"
+    "
 
-    umount_current_image
+    umount_image "$c_fedora_temp_build_image_path"
   fi
 }
 
@@ -573,7 +580,10 @@ function prepare_final_image_with_data {
   if [[ ! -f $c_busybear_prepared_image_path ]]; then
     echo "BusyBear prepared image not found, copying..."
 
-    cp "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
+    # Only need to set the size, without resizing the partition, as the image is not partitioned.
+    #
+    qemu-img convert -p -O qcow2 "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
+    qemu-img resize "$c_busybear_prepared_image_path" "$c_working_images_size"
   fi
 
   mount_image "$c_busybear_prepared_image_path"
@@ -585,7 +595,7 @@ function prepare_final_image_with_data {
 
   # PARSEC + Inputs
   #
-  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git \
+  sudo rsync -av --info=progress2 --no-inc-recursive --exclude={.git,src,obj} \
     "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ |
     grep '/$'
 
@@ -600,7 +610,7 @@ function prepare_final_image_with_data {
 
   # Done!
 
-  umount_current_image
+  umount_image "$c_busybear_prepared_image_path"
 }
 
 function print_completion_message {
@@ -685,16 +695,27 @@ function shutdown_fedora {
 #
 function mount_image {
   local image=$1
-  local image_partition=${2:+p$2}
+  local block_device=/dev/sda${2:-}
 
-  v_current_loop_device=$(sudo losetup --show --find --partscan "$image")
-  sudo mount "${v_current_loop_device}${image_partition}" "$c_local_mount_dir"
+  sudo guestmount -a "$image" -m "$block_device" "$c_local_mount_dir"
 }
 
-function umount_current_image {
-  sudo umount "$c_local_mount_dir"
-  sudo losetup -d "$v_current_loop_device"
-  v_current_loop_device=
+function umount_image {
+  local image=$1
+
+  if sudo mountpoint -q "$c_local_mount_dir"; then
+    # The libguestfs stack is functionally poor.
+    # Unmounting (also via umount), causes an odd `fuse: mountpoint is not empty` error; the guestunmount
+    # help seems to acknowledge this (ie. retries option), so we don't display errors.
+    # Additionally, on unmount, the sync is tentative, so need to manually check that the file is closed.
+    #
+    sudo guestunmount -q "$c_local_mount_dir"
+
+    # Just ignore the gvfs warning.
+    while [[ -n $(sudo lsof -e "$XDG_RUNTIME_DIR/gvfs" "$1" 2> /dev/null) ]]; do
+      sleep 0.5
+    done
+  fi
 }
 
 ####################################################################################################
