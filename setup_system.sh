@@ -225,7 +225,7 @@ function build_toolchain {
 
 # This step is required by Busybear; see https://github.com/michaeljclark/busybear-linux/issues/10.
 #
-function prepare_toolchain {
+function adjust_toolchain {
   print_header "Preparing the toolchain..."
 
   cd "$c_projects_dir/riscv-gnu-toolchain/build/sysroot/usr/include/gnu"
@@ -597,7 +597,7 @@ function build_parsec {
 #
 # Note that libs are better copied rather than rsync'd, since they are often symlinks.
 #
-function prepare_final_image_with_data {
+function prepare_final_image {
   print_header "Preparing final image..."
 
   if [[ ! -f $c_busybear_prepared_image_path ]]; then
@@ -761,26 +761,27 @@ add_toolchain_binaries_to_path
 
 download_projects
 
-# This needs to be built in advance, due to the kernel configuration.
 build_toolchain
+adjust_toolchain
 
-prepare_toolchain
 prepare_linux_kernel
-prepare_busybear
-prepare_qemu
-
 build_linux_kernel
+
+prepare_busybear
 build_busybear
-copy_opensbi_firmware
-build_qemu
+
 build_bash
 
-# This needs to be prepared late, due the QEMU binary dependency.
+copy_opensbi_firmware
+
+prepare_qemu
+build_qemu
+
 prepare_fedora
 
 build_parsec
 build_pigz
 
-prepare_final_image_with_data
+prepare_final_image
 
 print_completion_message
