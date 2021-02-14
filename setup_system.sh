@@ -397,13 +397,13 @@ function build_bash {
 # of difference, but it's certainly due to some frantic write activity.
 #
 function prepare_fedora {
-  echo "Preparing Fedora..."
-
   # Chunky procedure, so don't redo it if the file exists.
   #
   if [[ -f $c_local_fedora_prepared_image_path ]]; then
     echo "Prepared fedora image found; not processing..."
   else
+    echo "Preparing Fedora..."
+
     ####################################
     # Create extend image
     ####################################
@@ -596,16 +596,16 @@ function prepare_final_image_with_data {
 
   # Pigz(-related)
   #
-  sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
-  sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
+  sudo rsync -av                     "$c_pigz_binary_file" "$c_local_mount_dir"/root/
+  sudo rsync -av --append --progress "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   # PARSEC + Inputs
   #
-  sudo rsync -av --info=progress2 --no-inc-recursive --exclude={.git,src,obj} \
+  sudo rsync -av --exclude={.git,src,obj} \
     "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ |
     grep '/$'
 
-  sudo rsync -av --info=progress2 --no-inc-recursive --append \
+  sudo rsync -av --append \
     "$c_local_parsec_inputs_path"/ "$c_local_mount_dir"/root/parsec-benchmark/ |
     grep '/$'
 
