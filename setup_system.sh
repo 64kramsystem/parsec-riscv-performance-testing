@@ -595,7 +595,7 @@ function prepare_final_image_with_data {
 
   # PARSEC + Inputs
   #
-  sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git \
+  sudo rsync -av --info=progress2 --no-inc-recursive --exclude={.git,src,obj} \
     "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ |
     grep '/$'
 
