@@ -47,7 +47,8 @@ c_local_fedora_prepared_image_path="${c_local_fedora_raw_image_path/.raw/.prepar
 c_fedora_temp_build_image_path=$(dirname "$(mktemp)")/fedora.temp.build.raw
 c_local_parsec_inputs_path=$c_projects_dir/parsec-inputs
 c_local_parsec_benchmark_path=$c_projects_dir/parsec-benchmark
-c_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
+c_compiled_qemu_binary=$c_projects_dir/qemu-pinning/bin/debug/native/qemu-system-riscv64
+c_system_qemu_binary=qemu-system-riscv64
 c_qemu_pidfile=${XDG_RUNTIME_DIR:-/tmp}/$(basename "$0").qemu.pid
 c_bash_binary=$c_projects_dir/$(echo "$c_bash_tarball_address" | perl -ne 'print /([^\/]+)\.tar.\w+$/')/bash
 c_local_mount_dir=/mnt
@@ -108,7 +109,11 @@ function cache_sudo {
 
 function register_exit_hook {
   function _exit_hook {
-    pkill -f "$(basename "$c_qemu_binary")" || true
+    # They actually have the same name, but better be safe.
+    #
+    pkill -f "$(basename "$c_compiled_qemu_binary")" || true
+    pkill -f "$(basename "$c_system_qemu_binary")" || true
+
     rm -f "$c_qemu_pidfile"
 
     rm -f "$c_fedora_temp_build_image_path"
@@ -132,7 +137,7 @@ function add_toolchain_binaries_to_path {
 
 function install_base_packages {
   sudo apt update
-  sudo apt install -y git build-essential flex sshpass pigz gnuplot libguestfs-tools
+  sudo apt install -y git build-essential flex sshpass pigz gnuplot libguestfs-tools qemu-system-misc
 }
 
 function download_projects {
@@ -337,60 +342,6 @@ function prepare_qemu {
   perl -i -pe 's/^#define VIRT_(CPU|SOCKET)S_MAX \K.*/256/' include/hw/riscv/virt.h
 }
 
-function build_linux_kernel {
-  cd "$c_projects_dir/linux-stable"
-
-  linux_kernel_file=arch/riscv/boot/Image
-
-  if [[ -f $linux_kernel_file ]]; then
-    echo "Compiled Linux kernel found; not compiling/copying..."
-  else
-    make ARCH=riscv CROSS_COMPILE="$(basename "${c_compiler_binary%gcc}")" -j "$(nproc)"
-
-    cp "$linux_kernel_file" "$c_components_dir"/
-  fi
-}
-
-function build_busybear {
-  cd "$c_projects_dir/busybear-linux"
-
-  if [[ -f $c_busybear_raw_image_path ]]; then
-    echo "Busybear image found; not building..."
-  else
-    echo 'WATCH OUT!! Busybear may fail without useful messages. If this happens, add `set -x` on top of its `build.sh` script.'
-
-    make
-  fi
-}
-
-function build_qemu {
-  cd "$c_projects_dir/qemu-pinning"
-
-  if [[ -f $c_qemu_binary ]]; then
-    echo "QEMU binary found; not compiling/copying..."
-  else
-    ./build_pinning_qemu_binary.sh --target=riscv64 --yes
-
-    cp "$c_qemu_binary" "$c_components_dir"/
-  fi
-}
-
-function build_bash {
-  cd "$(dirname "$c_bash_binary")"
-
-  if [[ -f $c_bash_binary ]]; then
-    echo "Bash binary found; not compiling..."
-  else
-    # See http://www.linuxfromscratch.org/lfs/view/development/chapter06/bash.html.
-    #
-    # $LFS_TGT is blank, so it's not set, and we're not performing the install, either.
-    #
-    ./configure --host="$(support/config.guess)" CC="$(basename "$c_compiler_binary")" --enable-static-link --without-bash-malloc
-
-    make -j "$(nproc)"
-  fi
-}
-
 # Depends on QEMU.
 #
 function prepare_fedora {
@@ -424,7 +375,7 @@ function prepare_fedora {
     # Start Fedora
     ####################################
 
-    start_fedora "$c_local_fedora_prepared_image_path"
+    start_fedora "$c_system_qemu_binary" "$c_local_fedora_prepared_image_path"
 
     ####################################
     # Disable long-running service
@@ -458,6 +409,60 @@ function prepare_fedora {
   fi
 }
 
+function build_linux_kernel {
+  cd "$c_projects_dir/linux-stable"
+
+  linux_kernel_file=arch/riscv/boot/Image
+
+  if [[ -f $linux_kernel_file ]]; then
+    echo "Compiled Linux kernel found; not compiling/copying..."
+  else
+    make ARCH=riscv CROSS_COMPILE="$(basename "${c_compiler_binary%gcc}")" -j "$(nproc)"
+
+    cp "$linux_kernel_file" "$c_components_dir"/
+  fi
+}
+
+function build_busybear {
+  cd "$c_projects_dir/busybear-linux"
+
+  if [[ -f $c_busybear_raw_image_path ]]; then
+    echo "Busybear image found; not building..."
+  else
+    echo 'WATCH OUT!! Busybear may fail without useful messages. If this happens, add `set -x` on top of its `build.sh` script.'
+
+    make
+  fi
+}
+
+function build_qemu {
+  cd "$c_projects_dir/qemu-pinning"
+
+  if [[ -f $c_compiled_qemu_binary ]]; then
+    echo "QEMU binary found; not compiling/copying..."
+  else
+    ./build_pinning_qemu_binary.sh --target=riscv64 --yes
+
+    cp "$c_compiled_qemu_binary" "$c_components_dir"/
+  fi
+}
+
+function build_bash {
+  cd "$(dirname "$c_bash_binary")"
+
+  if [[ -f $c_bash_binary ]]; then
+    echo "Bash binary found; not compiling..."
+  else
+    # See http://www.linuxfromscratch.org/lfs/view/development/chapter06/bash.html.
+    #
+    # $LFS_TGT is blank, so it's not set, and we're not performing the install, either.
+    #
+    ./configure --host="$(support/config.guess)" CC="$(basename "$c_compiler_binary")" --enable-static-link --without-bash-malloc
+
+    make -j "$(nproc)"
+  fi
+}
+
 function copy_opensbi_firmware {
   cd "$c_projects_dir"/opensbi-*-rv-bin/
 
@@ -481,6 +486,9 @@ function build_pigz {
   fi
 }
 
+# Depends on the built QEMU. The stock one could be used, but has a limit of 8 HARTs, which is a considerable
+# limitation for systems with 16/32 threads (considering that building PARSEC is slow).
+#
 function build_parsec {
   # double check the name
   #
@@ -496,7 +504,7 @@ function build_parsec {
 
     cp "$c_local_fedora_prepared_image_path" "$c_fedora_temp_build_image_path"
 
-    start_fedora "$c_fedora_temp_build_image_path"
+    start_fedora "$c_compiled_qemu_binary" "$c_fedora_temp_build_image_path"
 
     # Build packages without dependencies first. Once, an error occurred while building libxml2 in parallel
     # with gsl and others, so for safety, gsl and libxml2 are built serially.
@@ -611,21 +619,29 @@ function print_completion_message {
 # HELPERS
 ####################################################################################################
 
-# $1: disk image
+# $1: qemu binary, 2: disk image
 #
 function start_fedora {
+  local qemu_binary=$1
+  local disk_image=$2
+
   local kernel_image=$c_components_dir/Image
   local bios_image=$c_components_dir/fw_dynamic.bin
-  local disk_image=$1
   local image_format=${disk_image##*.}
 
-  "$c_qemu_binary" \
+  if [[ $qemu_binary == "$c_system_qemu_binary" && $(nproc) -gt 8 ]]; then
+    local cpus=8
+  else
+    local cpus=$(nproc)
+  fi
+
+  "$qemu_binary" \
     -daemonize \
     -display none \
     -serial file:"$c_qemu_output_log_file" \
     -pidfile "$c_qemu_pidfile" \
     -machine virt \
-    -smp "$(nproc)",cores="$(nproc)",sockets=1,threads=1 \
+    -smp "$cpus",cores="$cpus",sockets=1,threads=1 \
     -accel tcg,thread=multi \
     -m "$c_fedora_run_memory" \
     -kernel "$kernel_image" \
@@ -716,16 +732,13 @@ prepare_toolchain
 prepare_linux_kernel
 prepare_busybear
 prepare_qemu
+prepare_fedora
 
 build_linux_kernel
 build_busybear
 copy_opensbi_firmware
 build_qemu
 build_bash
-
-# This needs to be prepared late, due the QEMU binary dependency.
-prepare_fedora
-
 build_parsec
 build_pigz
 
