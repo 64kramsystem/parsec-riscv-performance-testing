@@ -15,6 +15,7 @@ c_components_dir=$(readlink -f "$(dirname "$0")")/components
 c_projects_dir=$(readlink -f "$(dirname "$0")")/projects
 
 c_debug_log_file=$(basename "$0").log
+c_qemu_output_log_file=$(readlink -f "$(dirname "$0")")/qemu.out.log
 
 c_toolchain_address=https://github.com/riscv/riscv-gnu-toolchain.git
 c_linux_repo_address=git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
@@ -623,6 +624,7 @@ function start_fedora {
   "$c_qemu_binary" \
     -daemonize \
     -display none \
+    -serial file:"$c_qemu_output_log_file" \
     -pidfile "$c_qemu_pidfile" \
     -machine virt \
     -smp "$(nproc)",cores="$(nproc)",sockets=1,threads=1 \
