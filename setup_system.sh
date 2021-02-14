@@ -125,11 +125,15 @@ function add_toolchain_binaries_to_path {
 }
 
 function install_base_packages {
+  print_header "Installing required packages..."
+
   sudo apt update
   sudo apt install -y git build-essential flex sshpass pigz gnuplot libguestfs-tools
 }
 
 function download_projects {
+  print_header "Downloading projects..."
+
   local project_addresses=(
     "$c_toolchain_address"
     "$c_linux_repo_address"
@@ -206,6 +210,9 @@ function download_projects {
   fi
 }
 
+# In theory, the Ubuntu-provided toolchain could be used, but it lacks some libraries (e.g. libcrypt),
+# which make the setup complicated.
+#
 function build_toolchain {
   sudo apt install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk \
            bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat1-dev
@@ -219,7 +226,7 @@ function build_toolchain {
 # This step is required by Busybear; see https://github.com/michaeljclark/busybear-linux/issues/10.
 #
 function prepare_toolchain {
-  echo "Preparing the toolchain..."
+  print_header "Preparing the toolchain..."
 
   cd "$c_projects_dir/riscv-gnu-toolchain/build/sysroot/usr/include/gnu"
 
@@ -229,7 +236,7 @@ function prepare_toolchain {
 }
 
 function prepare_linux_kernel {
-  echo "Preparing the Linux kernel..."
+  print_header "Preparing the Linux kernel..."
 
   # Some required packages are installed ahead (flex, bison...).
 
@@ -292,7 +299,7 @@ DIFF
 }
 
 function prepare_busybear {
-  echo "Preparing BusyBear..."
+  print_header "Preparing BusyBear..."
 
   cd "$c_projects_dir/busybear-linux"
 
@@ -313,7 +320,7 @@ CFG
 }
 
 function prepare_qemu {
-  echo "Preparing QEMU..."
+  print_header "Preparing QEMU..."
 
   cd "$c_projects_dir/qemu-pinning"
 
@@ -332,8 +339,10 @@ function build_linux_kernel {
   linux_kernel_file=arch/riscv/boot/Image
 
   if [[ -f $linux_kernel_file ]]; then
-    echo "Compiled Linux kernel found; not compiling/copying..."
+    print_header "Compiled Linux kernel found; not compiling/copying..."
   else
+    print_header "Compiling Linux kernel..."
+
     make ARCH=riscv CROSS_COMPILE="$(basename "${c_compiler_binary%gcc}")" -j "$(nproc)"
 
     cp "$linux_kernel_file" "$c_components_dir"/
@@ -344,20 +353,26 @@ function build_busybear {
   cd "$c_projects_dir/busybear-linux"
 
   if [[ -f $c_busybear_raw_image_path ]]; then
-    echo "Busybear image found; not building..."
+    print_header "Busybear image found; not building..."
   else
+    print_header "Building BusyBear..."
     echo 'WATCH OUT!! Busybear may fail without useful messages. If this happens, add `set -x` on top of its `build.sh` script.'
 
     make
   fi
 }
 
+# Using the Ubuntu-provided QEMU for preparing Fedora would make the script cleaner, but it hangs on
+# boot (20.04 ships QEMU 4.2).
+#
 function build_qemu {
   cd "$c_projects_dir/qemu-pinning"
 
   if [[ -f $c_qemu_binary ]]; then
-    echo "QEMU binary found; not compiling/copying..."
+    print_header "QEMU binary found; not compiling/copying..."
   else
+    print_header "Building QEMU..."
+
     ./build_pinning_qemu_binary.sh --target=riscv64 --yes
 
     cp "$c_qemu_binary" "$c_components_dir"/
@@ -368,8 +383,10 @@ function build_bash {
   cd "$(dirname "$c_bash_binary")"
 
   if [[ -f $c_bash_binary ]]; then
-    echo "Bash binary found; not compiling..."
+    print_header "Bash binary found; not compiling..."
   else
+    print_header "Building Bash..."
+
     # See http://www.linuxfromscratch.org/lfs/view/development/chapter06/bash.html.
     #
     # $LFS_TGT is blank, so it's not set, and we're not performing the install, either.
@@ -391,13 +408,13 @@ function build_bash {
 # of difference, but it's certainly due to some frantic write activity.
 #
 function prepare_fedora {
-  echo "Preparing Fedora..."
-
   # Chunky procedure, so don't redo it if the file exists.
   #
   if [[ -f $c_local_fedora_prepared_image_path ]]; then
-    echo "Prepared fedora image found; not processing..."
+    print_header "Prepared fedora image found; not processing..."
   else
+    print_header "Preparing Fedora..."
+
     ####################################
     # Create extend image
     ####################################
@@ -460,6 +477,8 @@ function prepare_fedora {
 }
 
 function copy_opensbi_firmware {
+  print_header "Copying OpenSBI firmware..."
+
   cd "$c_projects_dir"/opensbi-*-rv-bin/
 
   cp "$c_riscv_firmware_file" "$c_components_dir"/
@@ -467,8 +486,10 @@ function copy_opensbi_firmware {
 
 function build_pigz {
   if [[ -f $c_pigz_binary_file ]]; then
-    echo "pigz binary found; not compiling/copying..."
+    print_header "pigz binary found; not compiling/copying..."
   else
+    print_header "Building pigz..."
+
     cd "$c_projects_dir/zlib"
 
     # For the zlib project included in the RISC-V toolchain, append `--host=x86_64`.
@@ -488,12 +509,12 @@ function build_parsec {
   local sample_built_package=$c_projects_dir/parsec-benchmark/pkgs/apps/blackscholes/inst/riscv64-linux.gcc/bin/blackscholes
 
   if [[ -f $sample_built_package ]]; then
-    echo "Sample PARSEC package found ($(basename "$sample_built_package")); not building..."
+    print_header "Sample PARSEC package found ($(basename "$sample_built_package")); not building..."
   else
     # Technically, we could leave the QEMU hanging around and copy directly from the VM to the BusyBear
     # image in the appropriate stage, but better to separate stages very clearly.
     #
-    echo "Building PARSEC suite in the Fedora VM, and copying it back..."
+    print_header "Building PARSEC suite in the Fedora VM, and copying it back..."
 
     qemu-img create -f qcow2 -b "$c_local_fedora_prepared_image_path" "$c_fedora_temp_build_image_path"
 
@@ -577,9 +598,9 @@ function build_parsec {
 # Note that libs are better copied rather than rsync'd, since they are often symlinks.
 #
 function prepare_final_image_with_data {
-  if [[ ! -f $c_busybear_prepared_image_path ]]; then
-    echo "BusyBear prepared image not found, copying..."
+  print_header "Preparing final image..."
 
+  if [[ ! -f $c_busybear_prepared_image_path ]]; then
     # Only need to set the size, without resizing the partition, as the image is not partitioned.
     #
     qemu-img convert -p -O qcow2 "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
@@ -590,16 +611,16 @@ function prepare_final_image_with_data {
 
   # Pigz(-related)
   #
-  sudo rsync -av          "$c_pigz_binary_file" "$c_local_mount_dir"/root/
-  sudo rsync -av --append "$c_pigz_input_file"  "$c_local_mount_dir"/root/
+  sudo rsync -av                     "$c_pigz_binary_file" "$c_local_mount_dir"/root/
+  sudo rsync -av --append --progress "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   # PARSEC + Inputs
   #
-  sudo rsync -av --info=progress2 --no-inc-recursive --exclude={.git,src,obj} \
+  sudo rsync -av --exclude={.git,src,obj} \
     "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/root/ |
     grep '/$'
 
-  sudo rsync -av --info=progress2 --no-inc-recursive --append \
+  sudo rsync -av --append \
     "$c_local_parsec_inputs_path"/ "$c_local_mount_dir"/root/parsec-benchmark/ |
     grep '/$'
 
@@ -614,12 +635,20 @@ function prepare_final_image_with_data {
 }
 
 function print_completion_message {
-  echo "Preparation completed!"
+  print_header "Preparation completed!"
 }
 
 ####################################################################################################
 # HELPERS
 ####################################################################################################
+
+# $1: message
+#
+function print_header {
+  echo '####################################################################################################'
+  echo "# $1"
+  echo '####################################################################################################'
+}
 
 # $1: disk image
 #
@@ -656,10 +685,9 @@ function start_fedora {
   run_fedora_command -o ConnectTimeout=90 exit
 
   # Something's odd going on here. One minute or two into the installation of the development packages,
-  # the VM connection would drop, causing dnf to fail, and the port on the host to stay open, but without
-  # the SSH service starting the handshake. This points either to the QEMU networking having some issue,
-  # or to some internal Fedora service dropping the connection, although the latter seems unlikely,
-  # as repeated connection to the port shouldn't prevent the problem it to happen.
+  # the VM connection drops, causing dnf to fail, while the port on the host stays open, but without
+  # the SSH service starting the handshake. The guest prints kernel errors which explicitly mention
+  # a bug, so there must be one across the stack.
   #
   set +x
   {
