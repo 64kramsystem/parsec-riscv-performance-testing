@@ -30,9 +30,6 @@ c_pigz_repo_address=https://github.com/madler/pigz.git
 # Bash v5.1 (make) has a bug on parallel compilation (see https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=4c2ebbf4b8bc660beb98cc2d845c73375d6e4f50).
 # It can be patched, but it's not worth the hassle.
 c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
-
-# The file_path can be anything, as long as it ends with '.pigz_input', so that it's picked up by the
-# benchmark script.
 c_pigz_input_file_address=https://cdimage.debian.org/mirror/cdimage/archive/10.7.0-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
 
 # See note in prepare_fedora() about the image formats.
@@ -54,6 +51,8 @@ c_local_mount_dir=/mnt
 
 c_compiler_binary=$c_projects_dir/riscv-gnu-toolchain/build/bin/riscv64-unknown-linux-gnu-gcc
 c_riscv_firmware_file=share/opensbi/lp64/generic/firmware/fw_dynamic.bin # relative
+# This can be anything, as long as it ends with '.pigz_input', so that it's picked up by the benchmark
+# script.
 c_pigz_input_file=$c_components_dir/$(basename "$c_pigz_input_file_address").pigz_input
 c_pigz_binary_file=$c_projects_dir/pigz/pigz
 
