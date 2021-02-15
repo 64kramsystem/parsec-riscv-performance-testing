@@ -1,3 +1,5 @@
+c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
+
 # Input: $1=Number of vCPUs.
 #
 function boot_guest {
@@ -5,6 +7,7 @@ function boot_guest {
 
   "$c_qemu_binary" \
     -display none -daemonize \
+    -serial file:"$c_qemu_output_log_file" \
     -pidfile "$c_qemu_pidfile" \
     -machine virt \
     -smp "$vcpus",cores="$vcpus",sockets=1,threads=1 \
