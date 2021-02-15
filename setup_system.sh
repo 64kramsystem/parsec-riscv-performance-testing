@@ -35,7 +35,8 @@ c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
 # benchmark script.
 c_pigz_input_file_address=https://cdimage.debian.org/mirror/cdimage/archive/10.7.0-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
 
-# See note in prepare_fedora() about the iamge formats.
+# See note in prepare_fedora() about the image formats.
+# The images size must have a `G` suffix (see prepare_busybear()).
 c_working_images_size=20G
 c_busybear_raw_image_path=$c_projects_dir/busybear-linux/busybear.bin
 c_busybear_prepared_image_path=$c_components_dir/busybear.qcow2
@@ -302,6 +303,19 @@ function prepare_busybear {
   print_header "Preparing BusyBear..."
 
   cd "$c_projects_dir/busybear-linux"
+
+  # 100 MB ought to be enough for everybody :)
+  #
+  # It seems we can't build it with the standard size, then create the final image via `virt-resize`
+  # (due to the non-partitioned image) or `qemu-img resize` (which doesn't affect the FS).
+  # The image size is expressed in M, due to dd, so we convert the unit.
+  #
+  local busybear_image_size=${c_working_images_size/G/K}
+  perl -i -pe "s/^IMAGE_SIZE=\K.*/$busybear_image_size/" conf/busybear.config
+
+  # Also make the image sparse, which saves space and time.
+  #
+  perl -i -pe 's/^dd if=/dd conv=sparse if=/' scripts/image.sh
 
   # Correct the networking to use QEMU's user networking. Busybear's default networking setup (bridging)
   # is overkill and generally not working.
@@ -601,10 +615,7 @@ function prepare_final_image {
   print_header "Preparing final image..."
 
   if [[ ! -f $c_busybear_prepared_image_path ]]; then
-    # Only need to set the size, without resizing the partition, as the image is not partitioned.
-    #
     qemu-img convert -p -O qcow2 "$c_busybear_raw_image_path" "$c_busybear_prepared_image_path"
-    qemu-img resize "$c_busybear_prepared_image_path" "$c_working_images_size"
   fi
 
   mount_image "$c_busybear_prepared_image_path"
