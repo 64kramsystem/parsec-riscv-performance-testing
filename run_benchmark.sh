@@ -185,24 +185,37 @@ function run_benchmark {
 function run_remote_command {
   # If there is an error, the output may never be shown, so we send it to stderr regardless.
   #
-  # See wait_guest_online() for ssh info.
+  # Disabling the host checking is required, both because sshpass doesn't get along with the host checking
+  # prompt, and because if the guest is changed (reset), SSH will complain.
+  #
   #
   sshpass -p "$c_ssh_password" \
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
       -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$@" | tee /dev/stderr
 }
 
-# Waiting for the port to be open is not enough, as QEMU leaves it open regardless.
+# Tricky, for a simple concept:
 #
-# In addition to verify that the ssh service is listening, by connecting, the first SSH connection,
-# which is typically slower, is burned.
-# Disabling the host checking is required, both because sshpass doesn't get along with the host checking
-# prompt, and because if the guest is changed (reset), SSH will complain.
+# - waiting for the port to be open is not enough, as QEMU leaves it open regardless;
+# - we can't use a single attempt with a long timeout (due to the first SSH connection being slower);
+#   in some cases, the connection times out - possibly this is due to QEMU receving the packets before
+#   the SSH server is up, and discarding them instead of queuing them.
 #
 function wait_guest_online {
   while ! nc -z localhost "$c_ssh_port"; do sleep 1; done
 
-  run_remote_command -o ConnectTimeout=90 exit
+  SECONDS=0
+  local single_attempt_timeout=2
+  local wait_time=60
+
+  while (( SECONDS < wait_time )); do
+    if run_remote_command -o ConnectTimeout="$single_attempt_timeout" exit 2> /dev/null; then
+      return
+    fi
+  done
+
+  >&2 echo "Couldn't connect to the VM within $wait_time seconds"
+  exit 1
 }
 
 # The guest may not (for RISC-V, it won't) respond to an ACPI shutdown, so the QEMU monitor strategy

@@ -690,24 +690,34 @@ function start_fedora {
 
   while ! nc -z localhost "$c_local_ssh_port"; do sleep 1; done
 
-  # The default timeout (the system one) is long. 90 seconds should be more than enough also for relatively
-  # slow hosts, but longer timeouts implies that the host is too slow, or that there is a problem.
+  # See run_benchmark.sh#wait_guest_online for this insanity.
   #
-  run_fedora_command -o ConnectTimeout=90 exit
+  SECONDS=0
+  local single_attempt_timeout=2
+  local wait_time=60
 
-  # Something's odd going on here. One minute or two into the installation of the development packages,
-  # the VM connection drops, causing dnf to fail, while the port on the host stays open, but without
-  # the SSH service starting the handshake. The guest prints kernel errors which explicitly mention
-  # a bug, so there must be one across the stack.
-  #
-  set +x
-  {
-    while nc -z localhost "$c_local_ssh_port"; do
-      curl localhost:"$c_local_ssh_port" 2> /dev/null || true
-      sleep 1
-    done
-  } &
-  set -x
+  while (( SECONDS < wait_time )); do
+    if run_remote_command -o ConnectTimeout="$single_attempt_timeout" exit 2> /dev/null; then
+      # Something's odd going on here. One minute or two into the installation of the development packages,
+      # the VM connection drops, causing dnf to fail, while the port on the host stays open, but without
+      # the SSH service starting the handshake. The guest prints kernel errors which explicitly mention
+      # a bug, so there must be one across the stack.
+      #
+      set +x
+      {
+        while nc -z localhost "$c_local_ssh_port"; do
+          curl localhost:"$c_local_ssh_port" 2> /dev/null || true
+          sleep 1
+        done
+      } &
+      set -x
+
+      return
+    fi
+  done
+
+  >&2 echo "Couldn't connect to the VM within $wait_time seconds"
+  exit 1
 }
 
 # $@: ssh params
