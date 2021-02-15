@@ -768,12 +768,12 @@ cache_sudo
 register_exit_hook
 
 install_base_packages
-add_toolchain_binaries_to_path
 
 download_projects
 
 build_toolchain
 adjust_toolchain
+add_toolchain_binaries_to_path
 
 prepare_linux_kernel
 build_linux_kernel
