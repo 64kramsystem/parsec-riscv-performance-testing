@@ -478,15 +478,13 @@ function prepare_fedora {
     ####################################
 
     run_fedora_command 'sudo dnf groupinstall -y "Development Tools" "Development Libraries"'
-    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo parallel rsync'
+    run_fedora_command 'sudo dnf install -y tar gcc-c++ texinfo rsync'
     # If vips finds liblzma in the system libraries, it will link dynamically, making it troublesome
     # to run on other systems. It's possible to compile statically (see https://lists.cs.princeton.edu/pipermail/parsec-users/2008-April/000081.html),
     # but this solution is simpler.
     run_fedora_command 'sudo dnf remove -y xz-devel'
-    # To replace with xargs once the script is releasable.
-    run_fedora_command 'echo "will cite" | parallel --citation || true'
     # Conveniences
-    run_fedora_command 'sudo dnf install -y vim pv zstd the_silver_searcher rsync htop'
+    run_fedora_command 'sudo dnf install -y vim pv zstd the_silver_searcher htop'
 
     shutdown_fedora
 
@@ -545,12 +543,23 @@ function build_parsec {
 
     start_fedora "$c_fedora_temp_build_image_path"
 
+    local parsec_libs=(
+      zlib
+      parmacs
+      libjpeg
+    )
+
     # Build packages without dependencies first. Once, an error occurred while building libxml2 in parallel
     # with gsl and others, so for safety, gsl and libxml2 are built serially.
     #
+    # The first three libraries are quick to build, so don't bother about optimizing the number of parallel
+    # processes.
+    #
+    # xargs doesn't support a customer delimiter on BusyBox, so it's a bit freaky.
+    #
     run_fedora_command "
       cd parsec-benchmark &&
-      parallel bin/parsecmgmt -a build -p ::: zlib parmacs libjpeg &&
+      xargs -P 0 -I {} bin/parsecmgmt -a build -p {} <<< '$(printf '%s\n' "${parsec_libs[@]}")' &&
       bin/parsecmgmt -a build -p libxml2 &&
       bin/parsecmgmt -a build -p gsl
     "
@@ -594,10 +603,12 @@ function build_parsec {
     # has nproc max jobs, and that builds work in bursts, 12.5% builds/nproc (e.g. 4 on 32) should be
     # reasonable.
     # The build time is dominated anyway by `vips`, which is significantly longer than the other ones.
+    #
+    local build_processes=$(( ($(nproc) + 8 - 1 ) / 8 )) # ceiling
 
     run_fedora_command "
       cd parsec-benchmark &&
-      parallel --max-procs=12.5% bin/parsecmgmt -a build -p ::: ${parsec_packages[*]}
+      xargs -P $build_processes -I {} bin/parsecmgmt -a build -p {} <<< '$(printf '%s\n' "${parsec_packages[@]}")'
     "
 
     shutdown_fedora
