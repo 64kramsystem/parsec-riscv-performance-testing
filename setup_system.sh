@@ -67,6 +67,8 @@ The toolchain project is very large. If existing already on the machine, buildin
 Prepares the image with the required files (stored in the root home).
 '
 
+v_delete_prepared_fedora_image= # boolean (false:blank, true:anything else)
+
 ####################################################################################################
 # MAIN FUNCTIONS
 ####################################################################################################
@@ -107,6 +109,10 @@ function register_exit_hook {
   function _exit_hook {
     pkill -f "$(basename "$c_qemu_binary")" || true
     rm -f "$c_qemu_pidfile"
+
+    if [[ -n $v_delete_prepared_fedora_image ]]; then
+      rm -f "$c_local_fedora_prepared_image_path"
+    fi
 
     rm -f "$c_fedora_temp_build_image_path"
 
@@ -428,6 +434,10 @@ function prepare_fedora {
   else
     print_header "Preparing Fedora..."
 
+    # For simplicity, rebuild if the image is prepared but not copied.
+    #
+    v_delete_prepared_fedora_image=1
+
     ####################################
     # Create extend image
     ####################################
@@ -486,6 +496,8 @@ function prepare_fedora {
     mount_image "$c_local_fedora_prepared_image_path" 4
     sudo rsync -av --info=progress2 --no-inc-recursive --exclude=.git "$c_local_parsec_benchmark_path" "$c_local_mount_dir"/home/riscv/ | grep '/$'
     umount_image "$c_local_fedora_prepared_image_path"
+
+    v_delete_prepared_fedora_image=
   fi
 }
 
