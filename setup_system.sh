@@ -486,7 +486,7 @@ function prepare_fedora {
     # To replace with xargs once the script is releasable.
     run_fedora_command 'echo "will cite" | parallel --citation || true'
     # Conveniences
-    run_fedora_command 'sudo dnf install -y vim pv zstd the_silver_searcher rsync htop'
+    run_fedora_command 'sudo dnf install -y vim pv zstd the_silver_searcher htop'
 
     shutdown_fedora
 
