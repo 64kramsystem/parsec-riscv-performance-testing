@@ -611,7 +611,7 @@ function build_parsec {
     sudo bash -c "
       shopt -s globstar
       cd $c_local_mount_dir/home/riscv/parsec-benchmark
-      rsync -av --info=progress2 --no-inc-recursive --relative ./ext/**/bin ./pkgs/**/bin "$c_local_parsec_benchmark_path"
+      rsync -av --info=progress2 --no-inc-recursive --relative ./ext/**/bin ./pkgs/**/bin $c_local_parsec_benchmark_path
     "
 
     umount_image "$c_fedora_temp_build_image_path"
