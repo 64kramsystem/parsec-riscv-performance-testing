@@ -49,6 +49,8 @@ Options:
 
 - `--smt`: enables SMT (the benchmark disables it by default)
 
+WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
+
 ---
 
 Requires the components built by `setup_system.sh` to be in place.
@@ -71,7 +73,6 @@ v_smt_on=      # boolean (true=blank, false=anything else)
 
 # Computed internally
 #
-v_previous_scaling_governor=  # string
 v_previous_smt_configuration= # string
 v_output_file_name=           # string
 v_thread_numbers_list=        # array

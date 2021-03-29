@@ -9,27 +9,11 @@ function init_debug_log {
 }
 
 function find_host_system_configuration_options {
-  local governors
-  mapfile -t governors < <(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor | sort -u)
-
-  if [[ ${#governors[@]} -ne 1 ]]; then
-    echo "Found unexpected number of processor governors: ${governors[*]}"
-    exit 1
-  else
-    v_previous_scaling_governor=${governors[0]}
-  fi
-
   v_previous_smt_configuration=$(cat /sys/devices/system/cpu/smt/control)
 }
 
-# See set_host_system_configuration() for ordering comments.
-#
 function exit_system_configuration_reset {
   echo "$v_previous_smt_configuration" | sudo tee /sys/devices/system/cpu/smt/control
-
-  if [[ -n $v_smt_on ]]; then
-    echo "$v_previous_scaling_governor" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-  fi
 }
 
 # Returns the sorted list of threads number.
@@ -62,15 +46,9 @@ function prepare_threads_number_list {
 }
 
 # WATCH OUT! If SMT is disabled, all the `/sys/devices/system/cpu/cpu*` files will be still present,
-# but raise an error when trying to change the governor. Therefore, we assume that it's ON before, and
-# we set the governor before disabling it.
-#
-# The reset logic actually works for a configuration starting with OFF, but when the governors are reset,
-# the output is confusing.
+# but raise an error when trying to change the governor (`cpufreq/scaling_governor`).
 #
 function set_host_system_configuration {
-  echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-
   if [[ -n $v_smt_on ]]; then
     echo off | sudo tee /sys/devices/system/cpu/smt/control
   fi
