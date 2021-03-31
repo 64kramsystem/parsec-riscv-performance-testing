@@ -43,7 +43,7 @@ Runs the specified benchmark with different vCPU/thread numbers, and stores the 
 
 Example usage:
 
-    ./'"$(basename "$0")"' pigz_mytest 1 support_scripts/qemu_basic.sh support_scripts/bench_pigz.sh
+    ./'"$(basename "$0")"' blackscholes_mytest 1 support_scripts/qemu_basic.sh support_scripts/bench_parsec_blackscholes.sh
 
 Options:
 

@@ -25,12 +25,9 @@ c_qemu_repo_address=https://github.com/saveriomiroddi/qemu-pinning.git
 c_parsec_benchmark_address=https://github.com/saveriomiroddi/parsec-benchmark-tweaked.git
 c_parsec_sim_inputs_address=https://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-sim.tar.gz
 c_parsec_native_inputs_address=https://parsec.cs.princeton.edu/download/3.0/parsec-3.0-input-native.tar.gz
-c_zlib_repo_address=https://github.com/madler/zlib.git
-c_pigz_repo_address=https://github.com/madler/pigz.git
 # Bash v5.1 (make) has a bug on parallel compilation (see https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=4c2ebbf4b8bc660beb98cc2d845c73375d6e4f50).
 # It can be patched, but it's not worth the hassle.
 c_bash_tarball_address=https://ftp.gnu.org/gnu/bash/bash-5.0.tar.gz
-c_pigz_input_file_address=https://cdimage.debian.org/mirror/cdimage/archive/10.7.0-live/amd64/iso-hybrid/debian-live-10.7.0-amd64-mate.iso
 
 # See note in prepare_fedora() about the image formats.
 # The images size must have a `G` suffix (see prepare_busybear()).
@@ -51,10 +48,6 @@ c_local_mount_dir=/mnt
 
 c_compiler_binary=$c_projects_dir/riscv-gnu-toolchain/build/bin/riscv64-unknown-linux-gnu-gcc
 c_riscv_firmware_file=share/opensbi/lp64/generic/firmware/fw_dynamic.bin # relative
-# This can be anything, as long as it ends with '.pigz_input', so that it's picked up by the benchmark
-# script.
-c_pigz_input_file=$c_components_dir/$(basename "$c_pigz_input_file_address").pigz_input
-c_pigz_binary_file=$c_projects_dir/pigz/pigz
 
 c_help='Usage: $(basename "$0")
 
@@ -134,7 +127,7 @@ function install_base_packages {
   print_header "Installing required packages..."
 
   sudo apt update
-  sudo apt install -y git build-essential flex sshpass pigz gnuplot libguestfs-tools
+  sudo apt install -y git build-essential flex sshpass gnuplot libguestfs-tools
 }
 
 function download_projects {
@@ -146,8 +139,6 @@ function download_projects {
     "$c_busybear_repo_address"
     "$c_qemu_repo_address"
     "$c_parsec_benchmark_address"
-    "$c_zlib_repo_address"
-    "$c_pigz_repo_address"
   )
 
   cd "$c_projects_dir"
@@ -205,14 +196,6 @@ function download_projects {
     echo "Bash project found; not downloading..."
   else
     wget --output-document=/dev/stdout "$c_bash_tarball_address" | tar xz --directory="$c_projects_dir"
-  fi
-
-  # Pigz input
-
-  if [[ -f $c_pigz_input_file ]]; then
-    echo "Pigz input file found; not downloading..."
-  else
-    wget "$c_pigz_input_file_address" -O "$c_pigz_input_file"
   fi
 }
 
@@ -507,25 +490,6 @@ function copy_opensbi_firmware {
   cp "$c_riscv_firmware_file" "$c_components_dir"/
 }
 
-function build_pigz {
-  if [[ -f $c_pigz_binary_file ]]; then
-    print_header "pigz binary found; not compiling/copying..."
-  else
-    print_header "Building pigz..."
-
-    cd "$c_projects_dir/zlib"
-
-    # For the zlib project included in the RISC-V toolchain, append `--host=x86_64`.
-    #
-    CC="$c_compiler_binary" ./configure
-    make -j "$(nproc)"
-
-    cd "$c_projects_dir/pigz"
-
-    make "LDFLAGS=-static" "CC=$c_compiler_binary -I $c_projects_dir/zlib -L $c_projects_dir/zlib" -j "$(nproc)"
-  fi
-}
-
 function build_parsec {
   # double check the name
   #
@@ -641,11 +605,6 @@ function prepare_final_image {
   fi
 
   mount_image "$c_busybear_prepared_image_path"
-
-  # Pigz(-related)
-  #
-  sudo rsync -av                     "$c_pigz_binary_file" "$c_local_mount_dir"/root/
-  sudo rsync -av --append --progress "$c_pigz_input_file"  "$c_local_mount_dir"/root/
 
   # PARSEC + Inputs
   #
@@ -823,7 +782,6 @@ build_qemu
 prepare_fedora
 
 build_parsec
-build_pigz
 
 prepare_final_image
 
