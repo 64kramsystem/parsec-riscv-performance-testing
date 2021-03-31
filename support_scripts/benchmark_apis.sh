@@ -13,7 +13,9 @@ function find_host_system_configuration_options {
 }
 
 function exit_system_configuration_reset {
-  echo "$v_previous_smt_configuration" | sudo tee /sys/devices/system/cpu/smt/control
+  if [[ -n $v_smt_on ]]; then
+    echo "$v_previous_smt_configuration" | sudo tee /sys/devices/system/cpu/smt/control
+  fi
 }
 
 # Returns the sorted list of threads number.
