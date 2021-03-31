@@ -127,7 +127,10 @@ function install_base_packages {
   print_header "Installing required packages..."
 
   sudo apt update
-  sudo apt install -y git build-essential flex sshpass gnuplot libguestfs-tools
+
+  # libsdl2-image is a runtime dependency of QEMU.
+  #
+  sudo apt install -y git build-essential flex sshpass gnuplot libguestfs-tools libsdl2-image-2.0-0
 }
 
 function download_projects {
