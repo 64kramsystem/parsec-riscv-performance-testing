@@ -69,7 +69,7 @@ The individual run for each threads number is spread. The rationale is that any 
 v_count_runs=  # int
 v_qemu_script= # string
 v_bench_script= # string
-v_smt_on=      # boolean (true=blank, false=anything else)
+v_smt_on=      # boolean (false=blank, true=anything else)
 
 # Computed internally
 #
