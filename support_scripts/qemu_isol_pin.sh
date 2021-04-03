@@ -1,3 +1,5 @@
+c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
+
 # For simplicity (of code), c_min_threads must be a power of 2, and less than (nproc -1).
 #
 c_min_threads=2
@@ -58,6 +60,7 @@ function boot_guest {
 
   "$c_qemu_binary" \
     -display none -daemonize \
+    -serial file:"$c_qemu_output_log_file" \
     -pidfile "$c_qemu_pidfile" \
     -machine virt \
     -smp "$vcpus",cores="$vcpus",sockets=1,threads=1 \
@@ -67,7 +70,7 @@ function boot_guest {
     -kernel "$c_kernel_image" \
     -bios "$c_bios_image" \
     -append "root=/dev/vda ro console=ttyS0" \
-    -drive file="$c_guest_image_run",format=raw,id=hd0 \
+    -drive file="$c_guest_image_temp",format=qcow2,id=hd0 \
     -device virtio-blk-device,drive=hd0 \
     -device virtio-net-device,netdev=usernet \
     -netdev user,id=usernet,hostfwd=tcp::"$c_ssh_port"-:22
