@@ -37,7 +37,7 @@ c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--smt] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--smt] [-w|--warmup <runs>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -48,6 +48,7 @@ Example usage:
 Options:
 
 - `--smt`: enables SMT (the benchmark disables it by default)
+- `--warmup <runs>`: run extra <runs> at the beginning, without storing them in the results
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -60,8 +61,6 @@ Powers of two below or equal $c_max_threads are used for each run; the of number
 The `sshpass` program must be available on the host.
 
 The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `<bench_name>.csv`.
-
-The individual run for each threads number is spread. The rationale is that any relatively long-lasting confounding factor (e.g. system getting increasingly hotter, and reducing the speed) will spread across thread numbers. If the per-thread number cycles were packaged together, any effect would skew the result (more) locally.
 '
 
 # User-defined
@@ -70,6 +69,7 @@ v_count_runs=  # int
 v_qemu_script= # string
 v_bench_script= # string
 v_smt_on=      # boolean (false=blank, true=anything else)
+v_warmup_runs=0 # int
 
 # Computed internally
 #
@@ -82,7 +82,7 @@ v_thread_numbers_list=        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hs --long help,smt --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hsw: --long help,smt,warmup: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -92,6 +92,9 @@ function decode_cmdline_args {
       -s|--smt)
         v_smt_on=1
         shift ;;
+      -w|--warmup)
+        v_warmup_runs=$2
+        shift 2 ;;
       --)
         shift
         break ;;
@@ -145,12 +148,23 @@ function run_benchmark {
 
   # See note in the help.
   #
-  for ((run = 0; run < v_count_runs; run++)); do
-    for threads in "${v_thread_numbers_list[@]}"; do
-      echo "Run:$run Threads:$threads..."
+  # Originally, the strategy was to use the run number in the outer cycle, with the rationale that variations
+  # between runs would not cluster across a number of threads (inner cycle).
+  # Later, the nesting has been reversed, and an option for a warmup run has been added; this has been
+  # made possible by giving the guideline of setting a fixed CPU clock (and by the warmup functionality).
+  #
+  for threads in "${v_thread_numbers_list[@]}"; do
+    boot_guest "$threads"
+    wait_guest_online
 
-      boot_guest "$threads"
-      wait_guest_online
+    for ((run = 0 - v_warmup_runs; run < v_count_runs; run++)); do
+      if (( run < 0 )); then
+        local run_description="warmup($((run + v_warmup_runs)))"
+      else
+        local run_description=$run
+      fi
+
+      echo "Run:$run_description Threads:$threads..."
 
       local benchmark_command
       benchmark_command=$(compose_benchmark_command "$threads")
@@ -168,12 +182,14 @@ function run_benchmark {
         echo "-> TIME=$run_walltime"
       fi
 
-      # Replaces time comma with dot, it present.
-      #
-      echo "$threads,$run,${run_walltime/,/.}" >> "$v_output_file_name"
-
-      shutdown_guest
+      if (( run >= 0 )); then
+        # Replaces time comma with dot, it present.
+        #
+        echo "$threads,$run,${run_walltime/,/.}" >> "$v_output_file_name"
+      fi
     done
+
+    shutdown_guest
   done
 }
 
