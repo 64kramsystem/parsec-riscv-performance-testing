@@ -11,11 +11,11 @@ c_scripts_name_prefix=bench_parsec_
 c_qemu_script_name=$c_scripts_dir/qemu_basic.sh
 c_run_benchmark_script=$(dirname "$0")/run_benchmark.sh
 
-c_help="Usage: $(basename "$0") [-s|--smt] <system_name> <per_benchmark_threads_runs>
+c_help="Usage: $(basename "$0") [-s|--no-smt] <system_name> <per_benchmark_threads_runs>
 
 Runs all the parsec benchmarks, appending the <system_name> to the benchmark name(s).
 
-- \`--smt\`: Enable SMT (the benchmark script disables it by default)
+- \`--no-smt\`: Disables SMT
 - \`per_benchmark_threads_runs\`: Runs for each test and number of threads"
 
 v_smt_option=()               # array
@@ -23,15 +23,15 @@ v_system_name=                # string
 v_per_benchmark_threads_runs= # int
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hs --long help,smt --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hs --long help,no-smt --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
       -h|--help)
         echo "$c_help"
         exit 0 ;;
-      -s|--smt)
-        v_smt_option=(--smt)
+      -s|--no-smt)
+        v_smt_option=(--no-smt)
         shift ;;
       --)
         shift

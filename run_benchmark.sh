@@ -37,7 +37,7 @@ c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--smt] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -47,7 +47,7 @@ Example usage:
 
 Options:
 
-- `--smt`: enables SMT (the benchmark disables it by default)
+- `--no-smt`: Disables SMT
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -64,32 +64,32 @@ The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `
 
 # User-defined
 #
-v_count_runs=  # int
-v_qemu_script= # string
-v_bench_script= # string
-v_smt_on=      # boolean (false=blank, true=anything else)
+v_count_runs=     # int
+v_qemu_script=    # string
+v_bench_script=   # string
+v_disable_smt=    # boolean (false=blank, true=anything else)
 
 # Computed internally
 #
-v_previous_smt_configuration= # string
-v_isolated_processors=()      # array
-v_output_file_name=           # string
-v_thread_numbers_list=()      # array
+v_previous_smt_configuration=   # string
+v_isolated_processors=()        # array
+v_output_file_name=             # string
+v_thread_numbers_list=()        # array
 
 ####################################################################################################
 # MAIN FUNCTIONS
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hs --long help,smt --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hs --long help,no-smt --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
       -h|--help)
         echo "$c_help"
         exit 0 ;;
-      -s|--smt)
-        v_smt_on=1
+      -s|--no-smt)
+        v_disable_smt=1
         shift ;;
       --)
         shift
