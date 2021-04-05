@@ -68,7 +68,7 @@ function prepare_threads_number_list {
 "
   fi
 
-  # Really ugly, but standard, bash way creating a sorted array.
+  # Really ugly, but standard, bash way of creating a sorted array.
   #
   mapfile -t v_thread_numbers_list < <(echo -n "$thread_numbers_list" | sort -n)
 
