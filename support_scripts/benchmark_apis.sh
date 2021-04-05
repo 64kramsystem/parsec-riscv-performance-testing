@@ -87,5 +87,9 @@ function set_host_system_configuration {
 }
 
 function print_completion_message {
-  echo ">>> Timing results stored as \`$v_timings_file_name\`"
+  if [[ -z $v_enable_perf ]]; then
+    echo "> Timing results stored as \`$v_timings_file_name\`"
+  else
+    echo "> Timing results NOT stored."
+  fi
 }

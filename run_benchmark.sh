@@ -50,7 +50,7 @@ Example usage:
 Options:
 
 - `--no-smt`: Disables SMT
-- `--perf`: Run perf
+- `--perf`: Run perf; when enabled, the timings file is not written
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -151,7 +151,9 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
-  echo "threads,run,run_time" > "$v_timings_file_name"
+  if [[ -z $v_enable_perf ]]; then
+    echo "threads,run,run_time" > "$v_timings_file_name"
+  fi
   > "$v_benchmark_log_file_name"
   rm -f "${v_perf_stats_file_name_tmpl%THREADSNUM*}"*
 
@@ -215,13 +217,15 @@ done"
       exit 1
     fi
 
-    local run=0
-    while IFS= read -r -a run_walltime; do
-      # Replace time comma with dot, it present.
-      #
-      echo "$threads,$run,${run_walltime/,/.}" >> "$v_timings_file_name"
-      (( ++run ))
-    done <<< "$run_walltimes"
+    if [[ -z $v_enable_perf ]]; then
+      local run=0
+      while IFS= read -r -a run_walltime; do
+        # Replace time comma with dot, it present.
+        #
+        echo "$threads,$run,${run_walltime/,/.}" >> "$v_timings_file_name"
+        (( ++run ))
+      done <<< "$run_walltimes"
+    fi
 
     shutdown_guest
   done
