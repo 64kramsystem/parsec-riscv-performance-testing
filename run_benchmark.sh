@@ -74,8 +74,9 @@ v_warmup_runs=0 # int
 # Computed internally
 #
 v_previous_smt_configuration= # string
+v_isolated_processors=()      # array
 v_output_file_name=           # string
-v_thread_numbers_list=        # array
+v_thread_numbers_list=()      # array
 
 ####################################################################################################
 # MAIN FUNCTIONS
@@ -261,6 +262,7 @@ find_host_system_configuration_options
 register_exit_handlers
 
 set_host_system_configuration
+prepare_isolated_processors_list
 prepare_threads_number_list
 run_benchmark
 

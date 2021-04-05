@@ -4,10 +4,10 @@
 #
 # In order to isolate CPUs (and restore):
 #
-#     perl -i.bak -pe 's/GRUB_CMDLINE_LINUX_DEFAULT.*\K"/ isolcpus=2-31"/' /etc/default/grub
+#     perl -i.bak -pe 's/GRUB_CMDLINE_LINUX_DEFAULT.*\K"/ isolcpus=1-15,17-31"/' /etc/default/grub
 #     update-grub
 #
-#     perl -i.bak -pe 's/ isolcpus=2-31//' /etc/default/grub
+#     perl -i.bak -pe 's/ ?isolcpus=[0-9,-]+//' /etc/default/grub
 #     update-grub
 #
 c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
@@ -17,20 +17,6 @@ c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
 c_min_threads=2
 c_max_threads=128
 
-# 0-based number of the first available CPU.
-#
-# nproc returns the number of CPUs available to the kernel; in the script conditions, since the result
-# is 1-based, it's also the 0-based index of the first unavailable cpu.
-#
-first_available_cpu=$(nproc)
-
-function count_available_cpus {
-  local tot_cpus
-  tot_cpus=$(grep -c '^processor' /proc/cpuinfo)
-
-  echo $(( tot_cpus - first_available_cpu ))
-}
-
 # Generates threads numbers that exclude one cpu, e.g., for 32: 2, 4, 8, 16, 31, 62 (or 30, 60, depending
 # on the SMT being enabled or not.)
 #
@@ -38,19 +24,20 @@ function count_available_cpus {
 # (most st00pid).
 #
 function prepare_threads_number_list {
-  local available_cpus
-  available_cpus=$(count_available_cpus)
+  local isolated_cores=${#v_isolated_processors[@]}
 
-  v_thread_numbers_list=()
+  if [[ -n v_smt_on ]]; then
+    isolated_cores=$((isolated_cores / 2))
+  fi
 
-  # WATCH OUT! We ignore the case where (available_cpus > c_max_threads); it would also (likely) be
+  # WATCH OUT! We ignore the case where (isolated_cores > c_max_threads); it would also (likely) be
   # undesirable.
   #
-  for ((threads_number = c_min_threads; threads_number < available_cpus; threads_number *= 2)); do
+  for ((threads_number = c_min_threads; threads_number < isolated_cores; threads_number *= 2)); do
     v_thread_numbers_list+=("$threads_number")
   done
 
-  for ((threads_number = available_cpus; threads_number <= c_max_threads ; threads_number *= 2)); do
+  for ((threads_number = isolated_cores; threads_number <= c_max_threads ; threads_number *= 2)); do
     v_thread_numbers_list+=("$threads_number")
   done
 
@@ -63,13 +50,10 @@ function boot_guest {
   local vcpus=$1
   local pinning_options=()
 
-  local available_cpus
-  available_cpus=$(count_available_cpus)
-
   echo "Affinities:"
-
   for ((vcpu = 0; vcpu < vcpus; vcpu++)); do
-    local assignment="vcpunum=$vcpu,affinity=$(( first_available_cpu + vcpu % available_cpus ))"
+    local isolated_processor_i=$((vcpu % ${#v_isolated_processors[@]}))
+    local assignment="vcpunum=$vcpu,affinity=${v_isolated_processors[$isolated_processor_i]}"
     pinning_options+=( -vcpu "$assignment")
     echo "  $assignment"
   done
