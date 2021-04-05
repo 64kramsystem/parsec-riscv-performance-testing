@@ -13,7 +13,8 @@ function find_host_system_configuration_options {
 }
 
 function exit_system_configuration_reset {
-  if [[ -n $v_smt_on ]]; then
+  if [[ -n $v_disable_smt ]]; then
+    echo "Restoring previous SMT setting ($v_previous_smt_configuration)..."
     echo "$v_previous_smt_configuration" | sudo tee /sys/devices/system/cpu/smt/control
   fi
 }
@@ -79,7 +80,8 @@ function prepare_threads_number_list {
 # but raise an error when trying to change the governor (`cpufreq/scaling_governor`).
 #
 function set_host_system_configuration {
-  if [[ -n $v_smt_on ]]; then
+  if [[ -n $v_disable_smt ]]; then
+    echo "Disabling SMT..."
     echo off | sudo tee /sys/devices/system/cpu/smt/control
   fi
 }

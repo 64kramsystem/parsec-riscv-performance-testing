@@ -21,7 +21,7 @@ c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
 function prepare_threads_number_list {
   local isolated_cores=${#v_isolated_processors[@]}
 
-  if [[ -n v_smt_on ]]; then
+  if [[ -n v_disable_smt ]]; then
     isolated_cores=$((isolated_cores / 2))
   fi
 
