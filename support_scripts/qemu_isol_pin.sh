@@ -24,16 +24,20 @@ c_max_threads=128
 # (most st00pid).
 #
 function prepare_threads_number_list {
-  local tot_isolated_processors=${#v_isolated_processors[@]}
+  local isolated_cores=${#v_isolated_processors[@]}
 
-  # WATCH OUT! We ignore the case where (tot_isolated_processors > c_max_threads); it would also (likely) be
+  if [[ -n v_smt_on ]]; then
+    isolated_cores=$((isolated_cores / 2))
+  fi
+
+  # WATCH OUT! We ignore the case where (isolated_cores > c_max_threads); it would also (likely) be
   # undesirable.
   #
-  for ((threads_number = c_min_threads; threads_number < tot_isolated_processors; threads_number *= 2)); do
+  for ((threads_number = c_min_threads; threads_number < isolated_cores; threads_number *= 2)); do
     v_thread_numbers_list+=("$threads_number")
   done
 
-  for ((threads_number = tot_isolated_processors; threads_number <= c_max_threads ; threads_number *= 2)); do
+  for ((threads_number = isolated_cores; threads_number <= c_max_threads ; threads_number *= 2)); do
     v_thread_numbers_list+=("$threads_number")
   done
 
