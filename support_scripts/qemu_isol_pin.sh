@@ -33,7 +33,9 @@ function prepare_threads_number_list {
   done
 
   for ((threads_number = isolated_cores; threads_number <= c_max_threads ; threads_number *= 2)); do
-    v_thread_numbers_list+=("$threads_number")
+    if ((threads_number >= c_min_threads)); then
+      v_thread_numbers_list+=("$threads_number")
+    fi
   done
 
   echo "Threads number list: ${v_thread_numbers_list[*]}"
