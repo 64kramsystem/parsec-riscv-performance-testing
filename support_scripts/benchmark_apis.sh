@@ -18,6 +18,34 @@ function exit_system_configuration_reset {
   fi
 }
 
+# Compute and set $v_available_processors.
+#
+function prepare_isolated_processors_list {
+  local isolcpu_descriptions=()
+
+  mapfile -td, isolcpu_descriptions < <(perl -pe 'chomp if eof' /sys/devices/system/cpu/isolated)
+
+  for isolcpu_description in "${isolcpu_descriptions[@]}"; do
+    local start_processor=${isolcpu_description%-*}
+    local end_processor=${isolcpu_description#*-}
+    local end_processor=${end_processor:-$start_processor}
+
+    for ((i = start_processor; i <= end_processor; i++)); do
+      v_isolated_processors+=("$i")
+    done
+  done
+
+  # Just in case, this is a convenient way to find the processors available to the kernel.
+  #
+  # local all_processors_count=
+  # all_processors_count=$(nproc --all)
+  # for ((i = 0; i < all_processors_count; i++)); do
+  #   if [[ ! ${v_isolated_processors[*]} =~ $(echo "\b$i\b") ]]; then
+  #     v_available_processors+=("$i")
+  #   fi
+  # done
+}
+
 # Returns the sorted list of threads number.
 #
 # Sorting is not really required, just nicer looking.
