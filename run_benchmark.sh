@@ -64,17 +64,17 @@ The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `
 
 # User-defined
 #
-v_count_runs=  # int
-v_qemu_script= # string
-v_bench_script= # string
-v_disable_smt= # boolean (false=blank, true=anything else)
+v_count_runs=     # int
+v_qemu_script=    # string
+v_bench_script=   # string
+v_disable_smt=    # boolean (false=blank, true=anything else)
 
 # Computed internally
 #
-v_previous_smt_configuration= # string
-v_isolated_processors=()      # array
-v_output_file_name=           # string
-v_thread_numbers_list=()      # array
+v_previous_smt_configuration=   # string
+v_isolated_processors=()        # array
+v_output_file_name=             # string
+v_thread_numbers_list=()        # array
 
 ####################################################################################################
 # MAIN FUNCTIONS
