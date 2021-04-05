@@ -73,7 +73,8 @@ v_disable_smt=    # boolean (false=blank, true=anything else)
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_output_file_name=             # string
+v_csv_file_name=                # string
+v_benchmark_log_file_name=      # string
 v_thread_numbers_list=()        # array
 
 ####################################################################################################
@@ -102,7 +103,8 @@ function decode_cmdline_args {
     exit 1
   fi
 
-  v_output_file_name=$c_output_dir/$1.csv
+  v_csv_file_name=$c_output_dir/$1.csv
+  v_benchmark_log_file_name=$c_output_dir/$1.log
   v_count_runs=$2
   v_qemu_script=$3
   v_bench_script=$4
@@ -140,7 +142,8 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
-  echo "threads,run,run_time" > "$v_output_file_name"
+  echo "threads,run,run_time" > "$v_csv_file_name"
+  > "$v_benchmark_log_file_name"
 
   # See note in the help.
   #
@@ -157,7 +160,7 @@ function run_benchmark {
 ################################################################################
 > Threads: $threads
 ################################################################################
-"
+" | tee -a "$v_benchmark_log_file_name"
 
     # The `cd` is for simulating a new session.
     #
@@ -171,6 +174,8 @@ done"
     local command_output
     command_output=$(run_remote_command "$benchmark_command")
 
+    echo "$command_output" >> "$v_benchmark_log_file_name"
+
     # Watch out: The last newline is stripped; this avoids makes it simpler to handle it, due to commands
     # generally appending a newline (echo, <<<), but it must not be forgotten.
     #
@@ -179,7 +184,7 @@ done"
 
     echo "
 > TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
-"
+" | tee -a "$v_benchmark_log_file_name"
 
     local tot_run_walltimes
     tot_run_walltimes=$(wc -l <<< "$run_walltimes")
@@ -193,7 +198,7 @@ done"
     while IFS= read -r -a run_walltime; do
       # Replace time comma with dot, it present.
       #
-      echo "$threads,$run,${run_walltime/,/.}" >> "$v_output_file_name"
+      echo "$threads,$run,${run_walltime/,/.}" >> "$v_csv_file_name"
       (( ++run ))
     done <<< "$run_walltimes"
 

@@ -87,5 +87,5 @@ function set_host_system_configuration {
 }
 
 function print_completion_message {
-  echo ">>> Results stored as \`$v_output_file_name\`"
+  echo ">>> Results stored as \`$v_csv_file_name\`"
 }
