@@ -26,8 +26,6 @@ c_max_threads=128
 function prepare_threads_number_list {
   local tot_isolated_processors=${#v_isolated_processors[@]}
 
-  v_thread_numbers_list=()
-
   # WATCH OUT! We ignore the case where (tot_isolated_processors > c_max_threads); it would also (likely) be
   # undesirable.
   #

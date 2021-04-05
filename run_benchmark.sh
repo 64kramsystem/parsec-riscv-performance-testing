@@ -76,7 +76,7 @@ v_warmup_runs=0 # int
 v_previous_smt_configuration= # string
 v_isolated_processors=()      # array
 v_output_file_name=           # string
-v_thread_numbers_list=        # array
+v_thread_numbers_list=()      # array
 
 ####################################################################################################
 # MAIN FUNCTIONS
