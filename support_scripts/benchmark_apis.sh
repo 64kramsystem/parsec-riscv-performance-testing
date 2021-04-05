@@ -87,5 +87,5 @@ function set_host_system_configuration {
 }
 
 function print_completion_message {
-  echo ">>> Results stored as \`$v_csv_file_name\`"
+  echo ">>> Timing results stored as \`$v_timings_file_name\`"
 }

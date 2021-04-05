@@ -73,7 +73,7 @@ v_disable_smt=    # boolean (false=blank, true=anything else)
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_csv_file_name=                # string
+v_timings_file_name=            # string
 v_benchmark_log_file_name=      # string
 v_thread_numbers_list=()        # array
 
@@ -103,7 +103,7 @@ function decode_cmdline_args {
     exit 1
   fi
 
-  v_csv_file_name=$c_output_dir/$1.csv
+  v_timings_file_name=$c_output_dir/$1.csv
   v_benchmark_log_file_name=$c_output_dir/$1.log
   v_count_runs=$2
   v_qemu_script=$3
@@ -142,7 +142,7 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
-  echo "threads,run,run_time" > "$v_csv_file_name"
+  echo "threads,run,run_time" > "$v_timings_file_name"
   > "$v_benchmark_log_file_name"
 
   # See note in the help.
@@ -198,7 +198,7 @@ done"
     while IFS= read -r -a run_walltime; do
       # Replace time comma with dot, it present.
       #
-      echo "$threads,$run,${run_walltime/,/.}" >> "$v_csv_file_name"
+      echo "$threads,$run,${run_walltime/,/.}" >> "$v_timings_file_name"
       (( ++run ))
     done <<< "$run_walltimes"
 
