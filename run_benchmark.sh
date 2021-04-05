@@ -35,9 +35,11 @@ c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
 # see above for the SSH port
 
+c_perf_events=L1-dcache-load-misses,context-switches,migrations
+
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -48,6 +50,7 @@ Example usage:
 Options:
 
 - `--no-smt`: Disables SMT
+- `--perf`: Run perf; when enabled, the timings file is not written
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -67,14 +70,16 @@ The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `
 v_count_runs=     # int
 v_qemu_script=    # string
 v_bench_script=   # string
+v_enable_perf=    # boolean (false=blank, true=anything else)
 v_disable_smt=    # boolean (false=blank, true=anything else)
 
 # Computed internally
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_csv_file_name=                # string
+v_timings_file_name=            # string
 v_benchmark_log_file_name=      # string
+v_perf_stats_file_name_tmpl=    # string; includes `THREADSNUM`
 v_thread_numbers_list=()        # array
 
 ####################################################################################################
@@ -82,7 +87,7 @@ v_thread_numbers_list=()        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hs --long help,no-smt --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hsp --long help,no-smt,perf --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -91,6 +96,9 @@ function decode_cmdline_args {
         exit 0 ;;
       -s|--no-smt)
         v_disable_smt=1
+        shift ;;
+      -p|--perf)
+        v_enable_perf=1
         shift ;;
       --)
         shift
@@ -103,8 +111,9 @@ function decode_cmdline_args {
     exit 1
   fi
 
-  v_csv_file_name=$c_output_dir/$1.csv
+  v_timings_file_name=$c_output_dir/$1.csv
   v_benchmark_log_file_name=$c_output_dir/$1.log
+  v_perf_stats_file_name_tmpl=$c_output_dir/$1.perf.THREADSNUM.csv
   v_count_runs=$2
   v_qemu_script=$3
   v_bench_script=$4
@@ -142,8 +151,11 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
-  echo "threads,run,run_time" > "$v_csv_file_name"
+  if [[ -z $v_enable_perf ]]; then
+    echo "threads,run,run_time" > "$v_timings_file_name"
+  fi
   > "$v_benchmark_log_file_name"
+  rm -f "${v_perf_stats_file_name_tmpl%THREADSNUM*}"*
 
   # See note in the help.
   #
@@ -171,8 +183,19 @@ ${benchmark_command}
 cd
 done"
 
+    if [[ -n $v_enable_perf ]]; then
+      local perf_stats_file_name=${v_perf_stats_file_name_tmpl/THREADSNUM/$threads}
+      sudo perf stat -e "$c_perf_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
+        2> "$perf_stats_file_name" &
+      local perf_pid=$!
+    fi
+
     local command_output
     command_output=$(run_remote_command "$benchmark_command")
+
+    if [[ -n $v_enable_perf ]]; then
+      sudo pkill -INT -P "$perf_pid"
+    fi
 
     echo "$command_output" >> "$v_benchmark_log_file_name"
 
@@ -194,13 +217,15 @@ done"
       exit 1
     fi
 
-    local run=0
-    while IFS= read -r -a run_walltime; do
-      # Replace time comma with dot, it present.
-      #
-      echo "$threads,$run,${run_walltime/,/.}" >> "$v_csv_file_name"
-      (( ++run ))
-    done <<< "$run_walltimes"
+    if [[ -z $v_enable_perf ]]; then
+      local run=0
+      while IFS= read -r -a run_walltime; do
+        # Replace time comma with dot, it present.
+        #
+        echo "$threads,$run,${run_walltime/,/.}" >> "$v_timings_file_name"
+        (( ++run ))
+      done <<< "$run_walltimes"
+    fi
 
     shutdown_guest
   done
