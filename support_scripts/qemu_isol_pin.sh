@@ -15,7 +15,7 @@ c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
 # For simplicity (of code), c_min_threads must be a power of 2, and less than (nproc -1).
 #
 c_min_threads=2
-c_max_threads=128
+c_max_threads=120
 
 # Generates threads numbers that exclude one cpu, e.g., for 32: 2, 4, 8, 16, 31, 62 (or 30, 60, depending
 # on the SMT being enabled or not.)
