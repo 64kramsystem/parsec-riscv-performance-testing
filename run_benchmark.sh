@@ -153,7 +153,11 @@ function run_benchmark {
     boot_guest "$threads"
     wait_guest_online
 
-    echo "Threads:$threads..."
+    echo "
+################################################################################
+> Threads: $threads
+################################################################################
+"
 
     # The `cd` is for simulating a new session.
     #
@@ -173,7 +177,9 @@ done"
     local run_walltimes
     run_walltimes=$(echo "$command_output" | perl -lne 'print $1 if /^ROI time measured: (\d+[.,]\d+)s/' | perl -pe 'chomp if eof')
 
-    echo "-> TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')"
+    echo "
+> TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
+"
 
     local tot_run_walltimes
     tot_run_walltimes=$(wc -l <<< "$run_walltimes")
