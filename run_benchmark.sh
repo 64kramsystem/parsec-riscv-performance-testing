@@ -153,31 +153,43 @@ function run_benchmark {
     boot_guest "$threads"
     wait_guest_online
 
-    for ((run = 0; run < v_count_runs; run++)); do
-      local run_description=$run
+    echo "Threads:$threads..."
 
-      echo "Run:$run_description Threads:$threads..."
+    # The `cd` is for simulating a new session.
+    #
+    local benchmark_command
+    benchmark_command=$(compose_benchmark_command "$threads")
+    benchmark_command="for ((run=0; run < $v_count_runs; run++)); do
+${benchmark_command}
+cd
+done"
 
-      local benchmark_command
-      benchmark_command=$(compose_benchmark_command "$threads")
+    local command_output
+    command_output=$(run_remote_command "$benchmark_command")
 
-      local command_output
-      command_output=$(run_remote_command "$benchmark_command")
+    # Watch out: The last newline is stripped; this avoids makes it simpler to handle it, due to commands
+    # generally appending a newline (echo, <<<), but it must not be forgotten.
+    #
+    local run_walltimes
+    run_walltimes=$(echo "$command_output" | perl -lne 'print $1 if /^ROI time measured: (\d+[.,]\d+)s/' | perl -pe 'chomp if eof')
 
-      local run_walltime
-      run_walltime=$(echo  "$command_output" | perl -ne 'print /^ROI time measured: (\d+[.,]\d+)s/')
+    echo "-> TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')"
 
-      if [[ -z $run_walltime ]]; then
-        >&2 echo "Walltime message not found!"
-        exit 1
-      else
-        echo "-> TIME=$run_walltime"
-      fi
+    local tot_run_walltimes
+    tot_run_walltimes=$(wc -l <<< "$run_walltimes")
 
-      # Replaces time comma with dot, it present.
+    if (( tot_run_walltimes != v_count_runs )); then
+      >&2 echo "Unexpected number of walltimes found: $tot_run_walltimes ($v_count_runs expected)"
+      exit 1
+    fi
+
+    local run=0
+    while IFS= read -r -a run_walltime; do
+      # Replace time comma with dot, it present.
       #
       echo "$threads,$run,${run_walltime/,/.}" >> "$v_output_file_name"
-    done
+      (( ++run ))
+    done <<< "$run_walltimes"
 
     shutdown_guest
   done
