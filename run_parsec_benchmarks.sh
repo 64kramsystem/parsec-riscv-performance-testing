@@ -11,19 +11,18 @@ c_scripts_name_prefix=bench_parsec_
 c_qemu_script_name=$c_scripts_dir/qemu_basic.sh
 c_run_benchmark_script=$(dirname "$0")/run_benchmark.sh
 
-c_help="Usage: $(basename "$0") [-s|--no-smt] <system_name> <per_benchmark_threads_runs>
+c_help="Usage: $(basename "$0") [-s|--no-smt] [-p|--perf] <system_name> <runs>
 
 Runs all the parsec benchmarks, appending the <system_name> to the benchmark name(s).
 
-- \`--no-smt\`: Disables SMT
-- \`per_benchmark_threads_runs\`: Runs for each test and number of threads"
+For the options, see \`run_benchmark.sh\`."
 
-v_smt_option=()               # array
+v_run_script_args=()          # array
 v_system_name=                # string
-v_per_benchmark_threads_runs= # int
+v_count_runs=                 # int
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hs --long help,no-smt --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hsp --long help,no-smt,perf --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -31,7 +30,10 @@ function decode_cmdline_args {
         echo "$c_help"
         exit 0 ;;
       -s|--no-smt)
-        v_smt_option=(--no-smt)
+        v_run_script_args+=(--no-smt)
+        shift ;;
+      -p|--perf)
+        v_run_script_args+=(--perf)
         shift ;;
       --)
         shift
@@ -45,7 +47,7 @@ function decode_cmdline_args {
   fi
 
   v_system_name=$1
-  v_per_benchmark_threads_runs=$2
+  v_count_runs=$2
 }
 
 # Ask sudo permissions only once over the runtime of the script.
@@ -68,7 +70,7 @@ function run_suites {
     bare_benchmark_name=${benchmark_script/"$c_scripts_dir/$c_scripts_name_prefix"}
     bare_benchmark_name=${bare_benchmark_name%.sh}
 
-    "$c_run_benchmark_script" "${v_smt_option[@]}" "${bare_benchmark_name}_${v_system_name}" "$v_per_benchmark_threads_runs" "$c_qemu_script_name" "$benchmark_script"
+    "$c_run_benchmark_script" "${v_run_script_args[@]}" "${bare_benchmark_name}_${v_system_name}" "$v_count_runs" "$c_qemu_script_name" "$benchmark_script"
   done
 }
 
