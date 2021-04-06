@@ -164,7 +164,7 @@ function run_benchmark {
   if [[ -z $v_enable_perf ]]; then
     echo "threads,run,run_time" > "$v_timings_file_name"
   fi
-  > "$v_benchmark_log_file_name"
+  true > "$v_benchmark_log_file_name"
   rm -f "${v_perf_stats_file_name_tmpl%THREADSNUM*}"*
 
   # See note in the help.
@@ -298,8 +298,10 @@ function shutdown_guest {
   run_remote_command "/sbin/halt"
 
   # Shutdown is asynchronous, so just wait for the pidfile to go.
+  # In some cases (unclear why, for PARSEC freqmine), the image file would still be locked by the next
+  # thread group, implying that QEMU is still on. For this reason, an extra check is needed.
   #
-  while [[ -f $c_qemu_pidfile ]]; do
+  while [[ -f $c_qemu_pidfile || $(lsof "$c_guest_image_temp" 2> /dev/null || true) != "" ]]; do
     sleep 0.5
   done
 }
