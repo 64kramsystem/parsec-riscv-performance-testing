@@ -298,8 +298,10 @@ function shutdown_guest {
   run_remote_command "/sbin/halt"
 
   # Shutdown is asynchronous, so just wait for the pidfile to go.
+  # In some cases (unclear why, for PARSEC freqmine), the image file would still be locked by the next
+  # thread group, implying that QEMU is still on. For this reason, an extra check is needed.
   #
-  while [[ -f $c_qemu_pidfile ]]; do
+  while [[ -f $c_qemu_pidfile || $(lsof "$c_guest_image_temp" 2> /dev/null || true) != "" ]]; do
     sleep 0.5
   done
 }
