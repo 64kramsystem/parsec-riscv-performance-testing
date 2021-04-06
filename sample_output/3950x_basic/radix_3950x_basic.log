@@ -1,0 +1,1055 @@
+
+################################################################################
+> Threads: 2 (bench_parsec_radix.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p2 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     2 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 49.566s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       22182599          636292        21545610
+
+                 TIMING INFORMATION
+Start time                        : 1617751029075244
+Initialization finish time        : 1617751056462187
+Overall finish time               : 1617751078644786
+Total time with initialization    :         49569542
+Total time without initialization :         22182599
+
+
+real	0m49.933s
+user	1m33.247s
+sys	0m5.283s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p2 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     2 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 49.706s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       22357642          637813        21719094
+
+                 TIMING INFORMATION
+Start time                        : 1617751086595747
+Initialization finish time        : 1617751113947925
+Overall finish time               : 1617751136305567
+Total time with initialization    :         49709820
+Total time without initialization :         22357642
+
+
+real	0m50.051s
+user	1m32.734s
+sys	0m5.890s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p2 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     2 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 49.239s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       21899540          668664        20784042
+
+                 TIMING INFORMATION
+Start time                        : 1617751144287021
+Initialization finish time        : 1617751171629775
+Overall finish time               : 1617751193529315
+Total time with initialization    :         49242294
+Total time without initialization :         21899540
+
+
+real	0m49.582s
+user	1m32.182s
+sys	0m5.568s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p2 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     2 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 50.709s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       23173190          633390        22539031
+
+                 TIMING INFORMATION
+Start time                        : 1617751201719194
+Initialization finish time        : 1617751229258546
+Overall finish time               : 1617751252431736
+Total time with initialization    :         50712542
+Total time without initialization :         23173190
+
+
+real	0m51.068s
+user	1m34.292s
+sys	0m5.942s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 49.566,49.706,49.239,50.709
+
+
+################################################################################
+> Threads: 4 (bench_parsec_radix.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p4 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     4 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 25.930s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       11615740          329742        11162590
+
+                 TIMING INFORMATION
+Start time                        : 1617751267157104
+Initialization finish time        : 1617751281474176
+Overall finish time               : 1617751293089916
+Total time with initialization    :         25932812
+Total time without initialization :         11615740
+
+
+real	0m26.299s
+user	1m35.543s
+sys	0m5.701s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p4 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     4 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 25.489s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       11194464          421660        10461686
+
+                 TIMING INFORMATION
+Start time                        : 1617751301114918
+Initialization finish time        : 1617751315412514
+Overall finish time               : 1617751326606978
+Total time with initialization    :         25492060
+Total time without initialization :         11194464
+
+
+real	0m25.833s
+user	1m34.510s
+sys	0m5.979s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p4 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     4 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 25.763s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       11465690          325295        11139731
+
+                 TIMING INFORMATION
+Start time                        : 1617751334665930
+Initialization finish time        : 1617751348967157
+Overall finish time               : 1617751360432847
+Total time with initialization    :         25766917
+Total time without initialization :         11465690
+
+
+real	0m26.113s
+user	1m35.707s
+sys	0m5.469s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p4 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     4 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 25.083s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0       10948341          325467        10502436
+
+                 TIMING INFORMATION
+Start time                        : 1617751368667213
+Initialization finish time        : 1617751382804949
+Overall finish time               : 1617751393753290
+Total time with initialization    :         25086077
+Total time without initialization :         10948341
+
+
+real	0m25.448s
+user	1m34.445s
+sys	0m5.702s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 25.930,25.489,25.763,25.083
+
+
+################################################################################
+> Threads: 8 (bench_parsec_radix.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p8 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     8 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 13.513s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        6419394          174146         5769266
+
+                 TIMING INFORMATION
+Start time                        : 1617751408196699
+Initialization finish time        : 1617751415292246
+Overall finish time               : 1617751421711640
+Total time with initialization    :         13514941
+Total time without initialization :          6419394
+
+
+real	0m13.893s
+user	1m36.494s
+sys	0m6.218s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p8 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     8 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 13.727s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        6601149          183789         5179921
+
+                 TIMING INFORMATION
+Start time                        : 1617751429756874
+Initialization finish time        : 1617751436885027
+Overall finish time               : 1617751443486176
+Total time with initialization    :         13729302
+Total time without initialization :          6601149
+
+
+real	0m14.078s
+user	1m36.802s
+sys	0m5.644s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p8 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     8 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 13.340s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        6217083          211811         5103029
+
+                 TIMING INFORMATION
+Start time                        : 1617751451584137
+Initialization finish time        : 1617751458708790
+Overall finish time               : 1617751464925873
+Total time with initialization    :         13341736
+Total time without initialization :          6217083
+
+
+real	0m13.695s
+user	1m35.441s
+sys	0m6.108s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p8 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     8 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 13.446s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        6373559          243394         5371027
+
+                 TIMING INFORMATION
+Start time                        : 1617751473169685
+Initialization finish time        : 1617751480243878
+Overall finish time               : 1617751486617437
+Total time with initialization    :         13447752
+Total time without initialization :          6373559
+
+
+real	0m13.803s
+user	1m36.167s
+sys	0m6.053s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 13.513,13.727,13.340,13.446
+
+
+################################################################################
+> Threads: 16 (bench_parsec_radix.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p16 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     16 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.486s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        3615177          154656         3032893
+
+                 TIMING INFORMATION
+Start time                        : 1617751501842053
+Initialization finish time        : 1617751505710069
+Overall finish time               : 1617751509325246
+Total time with initialization    :          7483193
+Total time without initialization :          3615177
+
+
+real	0m7.874s
+user	1m40.949s
+sys	0m6.465s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p16 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     16 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.569s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        3507176          147202         2818393
+
+                 TIMING INFORMATION
+Start time                        : 1617751517399451
+Initialization finish time        : 1617751521458373
+Overall finish time               : 1617751524965549
+Total time with initialization    :          7566098
+Total time without initialization :          3507176
+
+
+real	0m7.926s
+user	1m42.546s
+sys	0m6.335s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p16 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     16 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.474s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        3681752          160769         3170227
+
+                 TIMING INFORMATION
+Start time                        : 1617751533093114
+Initialization finish time        : 1617751536881944
+Overall finish time               : 1617751540563696
+Total time with initialization    :          7470582
+Total time without initialization :          3681752
+
+
+real	0m7.835s
+user	1m40.658s
+sys	0m6.521s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p16 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     16 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.413s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        3551380          141850         3103899
+
+                 TIMING INFORMATION
+Start time                        : 1617751548821583
+Initialization finish time        : 1617751552679323
+Overall finish time               : 1617751556230703
+Total time with initialization    :          7409120
+Total time without initialization :          3551380
+
+
+real	0m7.791s
+user	1m39.948s
+sys	0m6.814s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 7.486,7.569,7.474,7.413
+
+
+################################################################################
+> Threads: 32 (bench_parsec_radix.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p32 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     32 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 5.534s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2585193          115569         2234847
+
+                 TIMING INFORMATION
+Start time                        : 1617751572727347
+Initialization finish time        : 1617751575636930
+Overall finish time               : 1617751578222123
+Total time with initialization    :          5494776
+Total time without initialization :          2585193
+
+
+real	0m5.935s
+user	2m33.526s
+sys	0m11.492s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p32 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     32 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 5.441s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2495597          106513         2160928
+
+                 TIMING INFORMATION
+Start time                        : 1617751586332629
+Initialization finish time        : 1617751589246918
+Overall finish time               : 1617751591742515
+Total time with initialization    :          5409886
+Total time without initialization :          2495597
+
+
+real	0m5.827s
+user	2m31.228s
+sys	0m11.837s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p32 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     32 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 5.459s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2506426          112003         2181737
+
+                 TIMING INFORMATION
+Start time                        : 1617751599907562
+Initialization finish time        : 1617751602823323
+Overall finish time               : 1617751605329749
+Total time with initialization    :          5422187
+Total time without initialization :          2506426
+
+
+real	0m5.828s
+user	2m31.834s
+sys	0m10.896s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p32 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     32 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 5.516s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2547485          113802         2154431
+
+                 TIMING INFORMATION
+Start time                        : 1617751613679634
+Initialization finish time        : 1617751616605465
+Overall finish time               : 1617751619152950
+Total time with initialization    :          5473316
+Total time without initialization :          2547485
+
+
+real	0m5.909s
+user	2m32.724s
+sys	0m11.655s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 5.534,5.441,5.459,5.516
+
+
+################################################################################
+> Threads: 64 (bench_parsec_radix.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p64 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     64 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.431s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2845043          132956         2442168
+
+                 TIMING INFORMATION
+Start time                        : 1617751636412384
+Initialization finish time        : 1617751639577747
+Overall finish time               : 1617751642422790
+Total time with initialization    :          6010406
+Total time without initialization :          2845043
+
+
+real	0m7.869s
+user	6m0.663s
+sys	0m59.596s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p64 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     64 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.180s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2756608          145204         2231544
+
+                 TIMING INFORMATION
+Start time                        : 1617751652055985
+Initialization finish time        : 1617751655156163
+Overall finish time               : 1617751657912771
+Total time with initialization    :          5856786
+Total time without initialization :          2756608
+
+
+real	0m7.576s
+user	5m55.995s
+sys	0m51.884s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p64 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     64 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.159s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2735773          118893         2358303
+
+                 TIMING INFORMATION
+Start time                        : 1617751667699068
+Initialization finish time        : 1617751670847302
+Overall finish time               : 1617751673583075
+Total time with initialization    :          5884007
+Total time without initialization :          2735773
+
+
+real	0m7.604s
+user	5m45.907s
+sys	0m54.430s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.radix
+
+[PARSEC] [========== Running benchmark splash2x.radix [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/radix/inst/riscv64-linux.gcc/bin/radix -p64 -r4096 -n67108864 -m2147483647:
+
+Integer Radix Sort
+     67108864 Keys
+     64 Processors
+     Radix = 4096
+     Max key = 2147483647
+
+ROI time measured: 7.236s
+
+                 PROCESS STATISTICS
+               Total            Rank            Sort
+ Proc          Time             Time            Time
+    0        2739905          119961         2404617
+
+                 TIMING INFORMATION
+Start time                        : 1617751683083266
+Initialization finish time        : 1617751686207042
+Overall finish time               : 1617751688946947
+Total time with initialization    :          5863681
+Total time without initialization :          2739905
+
+
+real	0m7.630s
+user	5m51.844s
+sys	0m55.697s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 7.431,7.180,7.159,7.236
+
