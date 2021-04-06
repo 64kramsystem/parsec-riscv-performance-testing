@@ -54,6 +54,8 @@ Options:
 - `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
 - `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
 
+Some benchmarks may override the min/max for different reasons (they will print a warning).
+
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
 ---

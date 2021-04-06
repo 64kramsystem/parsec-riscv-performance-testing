@@ -5,10 +5,16 @@
 #
 c_input_type=simlarge
 
-# In order to test with 128 threads, the `native` input is required, however, that makes the 1-thread
-# run way too long.
-#
-v_max_threads=64
+if ((v_max_threads > 64)); then
+  # Hung on 128 threads
+  #
+  echo "> WARNING! This benchmark is capped at 64 max threads."
+
+  # In order to test with 128 threads, the `native` input is required, which is inconsistent with the
+  # others (all `simlarge`).
+  #
+  v_max_threads=64
+fi
 
 # The benchmark accepts only threads == 2ⁿ.
 #
