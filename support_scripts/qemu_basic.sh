@@ -1,5 +1,3 @@
-c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
-
 # Input: $1=Number of vCPUs.
 #
 function boot_guest {
