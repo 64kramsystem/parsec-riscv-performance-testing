@@ -2,7 +2,7 @@ c_input_type=simlarge
 
 # With NTHREADS=1, on riscv crashes, on amd64 doesn't show ROI.
 #
-c_min_threads=2
+v_min_threads=2
 
 # Input: $1=Number of threads.
 #

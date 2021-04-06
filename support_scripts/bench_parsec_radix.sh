@@ -5,7 +5,7 @@ c_input_type=simlarge
 function prepare_threads_number_list {
   local thread_numbers_list=""
 
-  for ((threads = c_min_threads; threads <= c_max_threads; threads *= 2)); do
+  for ((threads = v_min_threads; threads <= v_max_threads; threads *= 2)); do
     thread_numbers_list+="$threads
 "
   done
