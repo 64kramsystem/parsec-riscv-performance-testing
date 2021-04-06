@@ -83,7 +83,7 @@ v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
 v_timings_file_name=            # string
 v_benchmark_log_file_name=      # string
-v_perf_stats_file_name_tmpl=    # string; includes `THREADSNUM`
+v_perf_file_names_prefix=       # string
 v_thread_numbers_list=()        # array
 
 ####################################################################################################
@@ -123,7 +123,7 @@ function decode_cmdline_args {
 
   v_timings_file_name=$c_output_dir/$1.csv
   v_benchmark_log_file_name=$c_output_dir/$1.log
-  v_perf_stats_file_name_tmpl=$c_output_dir/$1.perf.THREADSNUM.csv
+  v_perf_file_names_prefix=$c_output_dir/$1.perf
   v_count_runs=$2
   v_qemu_script=$3
   v_bench_script=$4
@@ -165,7 +165,7 @@ function run_benchmark {
     echo "threads,run,run_time" > "$v_timings_file_name"
   fi
   true > "$v_benchmark_log_file_name"
-  rm -f "${v_perf_stats_file_name_tmpl%THREADSNUM*}"*
+  rm -f "$v_perf_file_names_prefix"*
 
   # See note in the help.
   #
@@ -194,7 +194,7 @@ cd
 done"
 
     if [[ -n $v_enable_perf ]]; then
-      local perf_stats_file_name=${v_perf_stats_file_name_tmpl/THREADSNUM/$threads}
+      local perf_stats_file_name=$v_perf_file_names_prefix.$threads.csv
       sudo perf stat -e "$c_perf_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
         2> "$perf_stats_file_name" &
       local perf_pid=$!
