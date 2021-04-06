@@ -12,7 +12,7 @@ c_program_names=(
   blackscholes
   bodytrack
   cholesky
-  ferret
+  # ferret        # unstable - see run script
   fft
   fluidanimate
   freqmine
