@@ -10,8 +10,8 @@ shopt -s inherit_errexit
 # VARIABLES/CONSTANTS
 ####################################################################################################
 
-c_min_threads=2
-c_max_threads=128
+v_min_threads=2
+v_max_threads=128
 
 c_ssh_user=root
 c_ssh_password=busybear
@@ -39,7 +39,7 @@ c_perf_events=L1-dcache-load-misses,context-switches,migrations
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -51,6 +51,10 @@ Options:
 
 - `--no-smt`: Disables SMT
 - `--perf`: Run perf; when enabled, the timings file is not written
+- `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
+- `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
+
+Some benchmarks may override the min/max for different reasons (they will print a warning).
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -58,7 +62,7 @@ WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in t
 
 Requires the components built by `setup_system.sh` to be in place.
 
-Powers of two below or equal $c_max_threads are used for each run; the of number of host processors is added if it'\''s not a power of 2.
+Powers of two below or equal $v_max_threads are used for each run; the of number of host processors is added if it'\''s not a power of 2.
 
 The `sshpass` program must be available on the host.
 
@@ -87,7 +91,7 @@ v_thread_numbers_list=()        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hsp --long help,no-smt,perf --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspm:M: --long help,no-smt,perf,min:,max: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -100,6 +104,12 @@ function decode_cmdline_args {
       -p|--perf)
         v_enable_perf=1
         shift ;;
+      -m|--min)
+        v_min_threads=$2
+        shift 2 ;;
+      -M|--max)
+        v_max_threads=$2
+        shift 2 ;;
       --)
         shift
         break ;;

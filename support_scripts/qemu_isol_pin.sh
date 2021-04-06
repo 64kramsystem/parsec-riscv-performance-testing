@@ -25,15 +25,15 @@ function prepare_threads_number_list {
     isolated_cores=$((isolated_cores / 2))
   fi
 
-  # WATCH OUT! We ignore the case where (isolated_cores > c_max_threads); it would also (likely) be
+  # WATCH OUT! We ignore the case where (isolated_cores > v_max_threads); it would also (likely) be
   # undesirable.
   #
-  for ((threads_number = c_min_threads; threads_number < isolated_cores; threads_number *= 2)); do
+  for ((threads_number = v_min_threads; threads_number < isolated_cores; threads_number *= 2)); do
     v_thread_numbers_list+=("$threads_number")
   done
 
-  for ((threads_number = isolated_cores; threads_number <= c_max_threads ; threads_number *= 2)); do
-    if ((threads_number >= c_min_threads)); then
+  for ((threads_number = isolated_cores; threads_number <= v_max_threads ; threads_number *= 2)); do
+    if ((threads_number >= v_min_threads)); then
       v_thread_numbers_list+=("$threads_number")
     fi
   done

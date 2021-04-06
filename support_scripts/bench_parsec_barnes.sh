@@ -1,8 +1,10 @@
 c_input_type=simlarge
 
-# Hung on 64 threads
-#
-c_max_threads=32
+if ((v_max_threads >= 32)); then
+  # Hung on 64 threads
+  #
+  echo "> WARNING! This benchmark is very slow after 32 threads."
+fi
 
 # Input: $1=Number of threads.
 #

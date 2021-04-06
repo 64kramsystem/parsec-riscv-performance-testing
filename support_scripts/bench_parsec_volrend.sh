@@ -1,8 +1,12 @@
 c_input_type=simlarge
 
-# With NTHREADS=1, on riscv crashes, on amd64 doesn't show ROI.
-#
-c_min_threads=2
+if ((v_min_threads < 2)); then
+  # With NTHREADS=1, on riscv crashes, and on amd64 it doesn't show the ROI.
+  #
+  echo "> WARNING! This benchmark has a forced minimum of 2 threads."
+
+  v_min_threads=2
+fi
 
 # Input: $1=Number of threads.
 #
