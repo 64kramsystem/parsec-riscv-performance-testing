@@ -164,7 +164,7 @@ function run_benchmark {
   if [[ -z $v_enable_perf ]]; then
     echo "threads,run,run_time" > "$v_timings_file_name"
   fi
-  > "$v_benchmark_log_file_name"
+  true > "$v_benchmark_log_file_name"
   rm -f "${v_perf_stats_file_name_tmpl%THREADSNUM*}"*
 
   # See note in the help.
