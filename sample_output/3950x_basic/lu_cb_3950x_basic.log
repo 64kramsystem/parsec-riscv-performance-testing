@@ -1,0 +1,1203 @@
+
+################################################################################
+> Threads: 2 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p2 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     2 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 16.723s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      16717568          1557        242706      16202829        270066
+
+                            TIMING INFORMATION
+Start time                        : 1617748379207316
+Initialization finish time        : 1617748380107440
+Overall finish time               : 1617748396825109
+Total time with initialization    :         17617793
+Total time without initialization :         16717669
+
+
+real	0m17.695s
+user	0m33.849s
+sys	0m0.168s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p2 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     2 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 16.731s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      16727746          1254        243634      16224837        257760
+
+                            TIMING INFORMATION
+Start time                        : 1617748404494933
+Initialization finish time        : 1617748405421238
+Overall finish time               : 1617748422149164
+Total time with initialization    :         17654231
+Total time without initialization :         16727926
+
+
+real	0m17.702s
+user	0m33.811s
+sys	0m0.219s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p2 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     2 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 16.740s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      16736191          1276        241887      16247149        245584
+
+                            TIMING INFORMATION
+Start time                        : 1617748429866884
+Initialization finish time        : 1617748430791523
+Overall finish time               : 1617748447527861
+Total time with initialization    :         17660977
+Total time without initialization :         16736338
+
+
+real	0m17.709s
+user	0m33.862s
+sys	0m0.196s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 2 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p2 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     2 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 16.731s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      16724838          1525        239736      16212229        271007
+
+                            TIMING INFORMATION
+Start time                        : 1617748455400054
+Initialization finish time        : 1617748456314987
+Overall finish time               : 1617748473040025
+Total time with initialization    :         17639971
+Total time without initialization :         16725038
+
+
+real	0m17.705s
+user	0m33.801s
+sys	0m0.232s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 16.723,16.731,16.740,16.731
+
+
+################################################################################
+> Threads: 4 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p4 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     4 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 8.554s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       8546575          1107        125790       8038230        381107
+
+                            TIMING INFORMATION
+Start time                        : 1617748487117412
+Initialization finish time        : 1617748488035292
+Overall finish time               : 1617748496582287
+Total time with initialization    :          9464875
+Total time without initialization :          8546995
+
+
+real	0m9.542s
+user	0m33.949s
+sys	0m0.268s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p4 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     4 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 8.551s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       8544477           639        122135       8045614        375814
+
+                            TIMING INFORMATION
+Start time                        : 1617748504336319
+Initialization finish time        : 1617748505287552
+Overall finish time               : 1617748513832286
+Total time with initialization    :          9495967
+Total time without initialization :          8544734
+
+
+real	0m9.546s
+user	0m33.988s
+sys	0m0.231s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p4 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     4 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 8.569s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       8563146           637        124753       8029332        408165
+
+                            TIMING INFORMATION
+Start time                        : 1617748521617162
+Initialization finish time        : 1617748522543647
+Overall finish time               : 1617748531106916
+Total time with initialization    :          9489754
+Total time without initialization :          8563269
+
+
+real	0m9.539s
+user	0m34.019s
+sys	0m0.189s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 4 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p4 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     4 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 8.524s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       8516872           953        117576       8027105        370904
+
+                            TIMING INFORMATION
+Start time                        : 1617748539066751
+Initialization finish time        : 1617748539985974
+Overall finish time               : 1617748548503149
+Total time with initialization    :          9436398
+Total time without initialization :          8517175
+
+
+real	0m9.500s
+user	0m33.889s
+sys	0m0.229s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 8.554,8.551,8.569,8.524
+
+
+################################################################################
+> Threads: 8 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p8 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     8 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.541s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       4529491           654         59515       3979179        489775
+
+                            TIMING INFORMATION
+Start time                        : 1617748563234326
+Initialization finish time        : 1617748564142760
+Overall finish time               : 1617748568672843
+Total time with initialization    :          5438517
+Total time without initialization :          4530083
+
+
+real	0m5.510s
+user	0m34.383s
+sys	0m0.248s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p8 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     8 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.588s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       4580126           332         61060       4020419        498083
+
+                            TIMING INFORMATION
+Start time                        : 1617748576427294
+Initialization finish time        : 1617748577372989
+Overall finish time               : 1617748581953316
+Total time with initialization    :          5526022
+Total time without initialization :          4580327
+
+
+real	0m5.575s
+user	0m34.712s
+sys	0m0.253s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p8 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     8 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.623s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       4615451           351         59952       4005855        549026
+
+                            TIMING INFORMATION
+Start time                        : 1617748589786239
+Initialization finish time        : 1617748590713887
+Overall finish time               : 1617748595329550
+Total time with initialization    :          5543311
+Total time without initialization :          4615663
+
+
+real	0m5.598s
+user	0m34.700s
+sys	0m0.283s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 8 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p8 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     8 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.526s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       4516034           649         60386       4005165        449480
+
+                            TIMING INFORMATION
+Start time                        : 1617748603252894
+Initialization finish time        : 1617748604176793
+Overall finish time               : 1617748608692974
+Total time with initialization    :          5440080
+Total time without initialization :          4516181
+
+
+real	0m5.506s
+user	0m34.455s
+sys	0m0.259s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 4.541,4.588,4.623,4.526
+
+
+################################################################################
+> Threads: 16 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p16 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     16 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 3.499s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3477794           503         33397       2244933       1198633
+
+                            TIMING INFORMATION
+Start time                        : 1617748623850814
+Initialization finish time        : 1617748624792156
+Overall finish time               : 1617748628270609
+Total time with initialization    :          4419795
+Total time without initialization :          3478453
+
+
+real	0m4.509s
+user	0m38.812s
+sys	0m0.529s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p16 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     16 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 3.536s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3518828           243         32563       2105760       1380021
+
+                            TIMING INFORMATION
+Start time                        : 1617748636096187
+Initialization finish time        : 1617748637073720
+Overall finish time               : 1617748640593025
+Total time with initialization    :          4496838
+Total time without initialization :          3519305
+
+
+real	0m4.554s
+user	0m38.750s
+sys	0m0.541s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p16 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     16 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 3.741s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3721759           271         38029       2589821       1093382
+
+                            TIMING INFORMATION
+Start time                        : 1617748648472920
+Initialization finish time        : 1617748649440715
+Overall finish time               : 1617748653163252
+Total time with initialization    :          4690332
+Total time without initialization :          3722537
+
+
+real	0m4.750s
+user	0m40.431s
+sys	0m0.564s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 16 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p16 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     16 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 3.431s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3410827           511         35995       2224854       1148885
+
+                            TIMING INFORMATION
+Start time                        : 1617748661099930
+Initialization finish time        : 1617748662041067
+Overall finish time               : 1617748665452456
+Total time with initialization    :          4352526
+Total time without initialization :          3411389
+
+
+real	0m4.437s
+user	0m38.516s
+sys	0m0.758s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 3.499,3.536,3.741,3.431
+
+
+################################################################################
+> Threads: 32 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p32 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     32 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 2.933s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       2867065           579         19684       1528008       1318331
+
+                            TIMING INFORMATION
+Start time                        : 1617748680732190
+Initialization finish time        : 1617748681667227
+Overall finish time               : 1617748684536288
+Total time with initialization    :          3804098
+Total time without initialization :          2869061
+
+
+real	0m3.931s
+user	1m1.890s
+sys	0m2.053s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p32 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     32 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 2.918s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       2857575           191         20061       1551274       1285737
+
+                            TIMING INFORMATION
+Start time                        : 1617748692415483
+Initialization finish time        : 1617748693328439
+Overall finish time               : 1617748696187228
+Total time with initialization    :          3771745
+Total time without initialization :          2858789
+
+
+real	0m3.867s
+user	1m1.899s
+sys	0m1.894s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p32 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     32 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 2.890s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       2827145           171         18533       1585061       1223070
+
+                            TIMING INFORMATION
+Start time                        : 1617748704091027
+Initialization finish time        : 1617748705037741
+Overall finish time               : 1617748707865843
+Total time with initialization    :          3774816
+Total time without initialization :          2828102
+
+
+real	0m3.872s
+user	1m1.613s
+sys	0m2.134s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 32 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p32 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     32 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 2.940s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       2861564           489         19240       1598839       1242554
+
+                            TIMING INFORMATION
+Start time                        : 1617748715939565
+Initialization finish time        : 1617748716887437
+Overall finish time               : 1617748719751043
+Total time with initialization    :          3811478
+Total time without initialization :          2863606
+
+
+real	0m3.938s
+user	1m2.197s
+sys	0m1.988s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 2.933,2.918,2.890,2.940
+
+
+################################################################################
+> Threads: 64 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p64 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     64 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.844s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3541032           468          8842        715257       2815921
+
+                            TIMING INFORMATION
+Start time                        : 1617748737220078
+Initialization finish time        : 1617748738006195
+Overall finish time               : 1617748741549788
+Total time with initialization    :          4329710
+Total time without initialization :          3543593
+
+
+real	0m5.688s
+user	2m15.023s
+sys	0m25.665s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p64 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     64 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.752s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3498165           162          9429        747925       2740270
+
+                            TIMING INFORMATION
+Start time                        : 1617748750908160
+Initialization finish time        : 1617748751710504
+Overall finish time               : 1617748755216169
+Total time with initialization    :          4308009
+Total time without initialization :          3505665
+
+
+real	0m5.576s
+user	2m12.963s
+sys	0m25.620s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p64 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     64 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.865s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3538509           135          8282        792391       2737322
+
+                            TIMING INFORMATION
+Start time                        : 1617748764349841
+Initialization finish time        : 1617748765150886
+Overall finish time               : 1617748768691712
+Total time with initialization    :          4341871
+Total time without initialization :          3540826
+
+
+real	0m5.688s
+user	2m15.906s
+sys	0m30.464s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 64 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p64 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     64 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 4.892s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0       3500362           503          9271        694909       2795206
+
+                            TIMING INFORMATION
+Start time                        : 1617748778043009
+Initialization finish time        : 1617748778803504
+Overall finish time               : 1617748782307958
+Total time with initialization    :          4264949
+Total time without initialization :          3504454
+
+
+real	0m5.687s
+user	2m20.397s
+sys	0m24.995s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 4.844,4.752,4.865,4.892
+
+
+################################################################################
+> Threads: 128 (bench_parsec_lu_cb.sh)
+################################################################################
+
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 128 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p128 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     128 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 64.389s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      61861191           602          3307         11189      61845513
+
+                            TIMING INFORMATION
+Start time                        : 1617748807414211
+Initialization finish time        : 1617748808941833
+Overall finish time               : 1617748871628605
+Total time with initialization    :         64214394
+Total time without initialization :         62686772
+
+
+real	1m5.294s
+user	2m24.638s
+sys	4m20.801s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 128 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p128 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     128 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 64.573s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      62947045           229          4039          6807      62935425
+
+                            TIMING INFORMATION
+Start time                        : 1617748880591768
+Initialization finish time        : 1617748881882959
+Overall finish time               : 1617748945074624
+Total time with initialization    :         64482856
+Total time without initialization :         63191665
+
+
+real	1m5.374s
+user	2m15.431s
+sys	4m12.558s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 128 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p128 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     128 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 64.861s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      61952754           626         11831         11736      61927980
+
+                            TIMING INFORMATION
+Start time                        : 1617748954146576
+Initialization finish time        : 1617748955431477
+Overall finish time               : 1617749017893962
+Total time with initialization    :         63747386
+Total time without initialization :         62462485
+
+
+real	1m5.693s
+user	2m42.275s
+sys	5m24.942s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+[PARSEC] Benchmarks to run:  splash2x.lu_cb
+
+[PARSEC] [========== Running benchmark splash2x.lu_cb [1] ==========]
+[PARSEC] Deleting old run directory.
+[PARSEC] Setting up run directory.
+[PARSEC] No archive for input 'simlarge' available, skipping input setup.
+[PARSEC] Running 'time /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/run.sh 128 simlarge':
+[PARSEC] [---------- Beginning of output ----------]
+Generating input file ...
+Running /root/parsec-benchmark/ext/splash2x/kernels/lu_cb/inst/riscv64-linux.gcc/bin/lu_cb -p128 -n2048 -b16:
+
+Blocked Dense LU Factorization
+     2048 by 2048 Matrix
+     128 Processors
+     16 by 16 Element Blocks
+
+
+ROI time measured: 64.159s
+                            PROCESS STATISTICS
+              Total      Diagonal     Perimeter      Interior       Barrier
+ Proc         Time         Time         Time           Time          Time
+    0      61942225           236          5389          5913      61930196
+
+                            TIMING INFORMATION
+Start time                        : 1617749027766682
+Initialization finish time        : 1617749029138107
+Overall finish time               : 1617749091664096
+Total time with initialization    :         63897414
+Total time without initialization :         62525989
+
+
+real	1m4.977s
+user	2m4.345s
+sys	4m27.545s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Woo et al. The SPLASH-2 Programs: Characterization and Methodological Considerations. ISCA, 1995.
+[PARSEC]
+[PARSEC] Done.
+
+> TIMES: 64.389,64.573,64.861,64.159
+
