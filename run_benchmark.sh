@@ -200,6 +200,10 @@ done"
       local perf_pid=$!
     fi
 
+    # Don't store the output in the script debug log - too verbose, and it has its own log.
+    #
+    set +x
+
     local command_output
     command_output=$(run_remote_command "$benchmark_command")
 
@@ -214,6 +218,10 @@ done"
     #
     local run_walltimes
     run_walltimes=$(echo "$command_output" | perl -lne 'print $1 if /^ROI time measured: (\d+[.,]\d+)s/' | perl -pe 'chomp if eof')
+
+    # Restore logging.
+    #
+    set -x
 
     echo "
 > TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
