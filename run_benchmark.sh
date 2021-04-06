@@ -196,6 +196,22 @@ cd
 done"
 
     if [[ -n $v_enable_perf ]]; then
+      # Sample lines:
+      #
+      #     Creating thread 'worker' -> PID 11042
+      #     Creating thread 'CPU 0/TCG' -> PID 11043
+      #
+      local vcpu_pids
+      mapfile -t vcpu_pids < <(perl -lne 'print $1 if /CPU.+PID (\d+)/' "$c_qemu_debug_file")
+
+      if ((${#vcpu_pids[@]} != threads)); then
+        >&2 echo "Unexpected number of QEMU vCPU thread PIDS found: ${vcpu_pids[*]}"
+        exit 1
+      fi
+
+      local perf_pids_file_name=$v_perf_file_names_prefix.$threads.pids
+      printf '%s\n' "${vcpu_pids[@]}" > "$perf_pids_file_name"
+
       local perf_stats_file_name=$v_perf_file_names_prefix.$threads.csv
       sudo perf stat -e "$c_perf_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
         2> "$perf_stats_file_name" &
