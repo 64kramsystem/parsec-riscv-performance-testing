@@ -237,10 +237,6 @@ done"
     local run_walltimes
     run_walltimes=$(echo "$command_output" | perl -lne 'print $1 if /^ROI time measured: (\d+[.,]\d+)s/' | perl -pe 'chomp if eof')
 
-    # Restore logging.
-    #
-    set -x
-
     echo "
 > TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
 " | tee -a "$v_benchmark_log_file_name"
@@ -262,6 +258,10 @@ done"
         (( ++run ))
       done <<< "$run_walltimes"
     fi
+
+    # Restore logging.
+    #
+    set -x
 
     shutdown_guest
   done
