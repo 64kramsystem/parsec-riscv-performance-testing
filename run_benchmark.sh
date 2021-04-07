@@ -37,11 +37,11 @@ c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
 # see above for the SSH port
 
-c_perf_events=L1-dcache-load-misses,context-switches,migrations,cycles,sched:sched_switch
+c_perf_stat_events=L1-dcache-load-misses,context-switches,migrations,cycles,sched:sched_switch
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -52,7 +52,7 @@ Example usage:
 Options:
 
 - `--no-smt`: Disables SMT
-- `--perf`: Run perf; when enabled, the timings file is not written
+- `--perf-stat`: Run perf stat; when enabled, the timings file is not written
 - `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
 - `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
 
@@ -60,7 +60,7 @@ Some benchmarks may override the min/max for different reasons (they will print 
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
-Perf stat events recorded: '"$c_perf_events"'
+Perf stat events recorded: '"$c_perf_stat_events"'
 
 ---
 
@@ -78,7 +78,7 @@ The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `
 v_count_runs=     # int
 v_qemu_script=    # string
 v_bench_script=   # string
-v_enable_perf=    # boolean (false=blank, true=anything else)
+v_enable_perf_stat=  # boolean (false=blank, true=anything else)
 v_disable_smt=    # boolean (false=blank, true=anything else)
 
 # Computed internally
@@ -95,7 +95,7 @@ v_thread_numbers_list=()        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hspm:M: --long help,no-smt,perf,min:,max: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspm:M: --long help,no-smt,perf-stat,min:,max: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -105,8 +105,8 @@ function decode_cmdline_args {
       -s|--no-smt)
         v_disable_smt=1
         shift ;;
-      -p|--perf)
-        v_enable_perf=1
+      -p|--perf-stat)
+        v_enable_perf_stat=1
         shift ;;
       -m|--min)
         v_min_threads=$2
@@ -165,7 +165,7 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
-  if [[ -z $v_enable_perf ]]; then
+  if [[ -z $v_enable_perf_stat ]]; then
     echo "threads,run,run_time" > "$v_timings_file_name"
   fi
   true > "$v_benchmark_log_file_name"
@@ -197,7 +197,7 @@ ${benchmark_command}
 cd
 done"
 
-    if [[ -n $v_enable_perf ]]; then
+    if [[ -n $v_enable_perf_stat ]]; then
       # Sample lines:
       #
       #     Creating thread 'worker' -> PID 11042
@@ -215,7 +215,7 @@ done"
       printf '%s\n' "${vcpu_pids[@]}" > "$perf_pids_file_name"
 
       local perf_stats_file_name=$v_perf_file_names_prefix.$threads.csv
-      sudo perf stat -e "$c_perf_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
+      sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
         2> "$perf_stats_file_name" &
       local perf_pid=$!
     fi
@@ -227,7 +227,7 @@ done"
     local command_output
     command_output=$(run_remote_command "$benchmark_command")
 
-    if [[ -n $v_enable_perf ]]; then
+    if [[ -n $v_enable_perf_stat ]]; then
       sudo pkill -INT -P "$perf_pid"
     fi
 
@@ -251,7 +251,7 @@ done"
       exit 1
     fi
 
-    if [[ -z $v_enable_perf ]]; then
+    if [[ -z $v_enable_perf_stat ]]; then
       local run=0
       while IFS= read -r -a run_walltime; do
         # Replace time comma with dot, it present.
