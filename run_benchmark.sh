@@ -85,9 +85,6 @@ v_disable_smt=    # boolean (false=blank, true=anything else)
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_timings_file_name=            # string
-v_benchmark_log_file_name=      # string
-v_perf_file_names_prefix=       # string
 v_thread_numbers_list=()        # array
 
 ####################################################################################################
@@ -125,9 +122,7 @@ function decode_cmdline_args {
     exit 1
   fi
 
-  v_timings_file_name=$c_output_dir/$1.csv
-  v_benchmark_log_file_name=$c_output_dir/$1.log
-  v_perf_file_names_prefix=$c_output_dir/$1.perf
+  v_bench_name=$1
   v_count_runs=$2
   v_qemu_script=$3
   v_bench_script=$4
@@ -165,11 +160,15 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
+  local timings_file_name=$c_output_dir/$1.csv
+  local benchmark_log_file_name=$c_output_dir/$1.log
+  local perf_file_names_prefix=$c_output_dir/$1.perf
+
   if [[ -z $v_enable_perf_stat ]]; then
-    echo "threads,run,run_time" > "$v_timings_file_name"
+    echo "threads,run,run_time" > "$timings_file_name"
   fi
-  true > "$v_benchmark_log_file_name"
-  rm -f "$v_perf_file_names_prefix"*
+  true > "$benchmark_log_file_name"
+  rm -f "$perf_file_names_prefix"*
 
   # See note in the help.
   #
@@ -186,7 +185,7 @@ function run_benchmark {
 ################################################################################
 > Threads: $threads ($(basename "$v_bench_script"))
 ################################################################################
-" | tee -a "$v_benchmark_log_file_name"
+" | tee -a "$benchmark_log_file_name"
 
     # The `cd` is for simulating a new session.
     #
@@ -200,14 +199,14 @@ done"
     local perf_pid
 
     if [[ -n $v_enable_perf_stat ]]; then
-      store_vcpu_pids "$threads"
-      perf_pid=$(start_perf_stat "$threads")
+      store_vcpu_pids "$threads" "$perf_file_names_prefix"
+      perf_pid=$(start_perf_stat "$threads" "$perf_file_names_prefix")
     fi
 
     # Perf is killed inside this function, as we want to run profiling as little as possible outside
     # the given benchmark cycle.
     #
-    run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads"
+    run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$timings_file_name"
 
     shutdown_guest
   done
@@ -221,6 +220,8 @@ function run_benchmark_thread_group {
   local benchmark_command=$1
   local perf_pid=$2
   local threads=$3
+  local benchmark_log_file_name=$4
+  local timings_file_name=$5
 
   # Don't store the output in the script debug log - too verbose, and it has its own log.
   #
@@ -233,17 +234,17 @@ function run_benchmark_thread_group {
     sudo pkill -INT -P "$perf_pid"
   fi
 
-  echo "$command_output" >> "$v_benchmark_log_file_name"
+  echo "$command_output" >> "$benchmark_log_file_name"
 
   local run_walltimes
   run_walltimes=$(extract_run_walltimes "$command_output")
 
   echo "
 > TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
-" | tee -a "$v_benchmark_log_file_name"
+" | tee -a "$benchmark_log_file_name"
 
   if [[ -z $perf_pid ]]; then
-    store_timings "$threads" "$run_walltimes"
+    store_timings "$threads" "$run_walltimes" "$timings_file_name"
   fi
 
   # Restore logging.
@@ -253,6 +254,7 @@ function run_benchmark_thread_group {
 
 function store_vcpu_pids {
   local threads=$1
+  local perf_file_names_prefix=$2
 
   # Sample lines:
   #
@@ -267,7 +269,7 @@ function store_vcpu_pids {
     exit 1
   fi
 
-  local perf_pids_file_name=$v_perf_file_names_prefix.$threads.pids
+  local perf_pids_file_name=$perf_file_names_prefix.$threads.pids
   printf '%s\n' "${vcpu_pids[@]}" > "$perf_pids_file_name"
 }
 
@@ -275,8 +277,9 @@ function store_vcpu_pids {
 #
 function start_perf_stat {
   local threads=$1
+  local perf_file_names_prefix=$2
 
-  local perf_stats_file_name=$v_perf_file_names_prefix.$threads.csv
+  local perf_stats_file_name=$perf_file_names_prefix.$threads.csv
   sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," 2> "$perf_stats_file_name" > /dev/null &
 
   echo -n "$!"
@@ -307,12 +310,13 @@ function extract_run_walltimes {
 function store_timings {
   local threads=$1
   local run_walltimes=$2
+  local timings_file_name=$3
 
   local run=0
   while IFS= read -r -a run_walltime; do
     # Replace time comma with dot, it present.
     #
-    echo "$threads,$run,${run_walltime/,/.}" >> "$v_timings_file_name"
+    echo "$threads,$run,${run_walltime/,/.}" >> "$timings_file_name"
     (( ++run ))
   done <<< "$run_walltimes"
 }
