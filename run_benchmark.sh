@@ -23,6 +23,8 @@ c_output_dir=$(readlink -f "$(dirname "$0")")/output
 c_temp_dir=$(dirname "$(mktemp)")
 
 c_qemu_binary=$c_components_dir/qemu-system-riscv64
+c_qemu_debug_file=$(basename "$0").qemu_debug.log
+c_qemu_output_log_file=$(basename "$0").qemu_out.log
 
 # Easier to run on a fresh copy each time, as an image can be easily broken, and leads to problems on
 # startup.
@@ -83,7 +85,7 @@ v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
 v_timings_file_name=            # string
 v_benchmark_log_file_name=      # string
-v_perf_stats_file_name_tmpl=    # string; includes `THREADSNUM`
+v_perf_file_names_prefix=       # string
 v_thread_numbers_list=()        # array
 
 ####################################################################################################
@@ -123,7 +125,7 @@ function decode_cmdline_args {
 
   v_timings_file_name=$c_output_dir/$1.csv
   v_benchmark_log_file_name=$c_output_dir/$1.log
-  v_perf_stats_file_name_tmpl=$c_output_dir/$1.perf.THREADSNUM.csv
+  v_perf_file_names_prefix=$c_output_dir/$1.perf
   v_count_runs=$2
   v_qemu_script=$3
   v_bench_script=$4
@@ -165,7 +167,7 @@ function run_benchmark {
     echo "threads,run,run_time" > "$v_timings_file_name"
   fi
   true > "$v_benchmark_log_file_name"
-  rm -f "${v_perf_stats_file_name_tmpl%THREADSNUM*}"*
+  rm -f "$v_perf_file_names_prefix"*
 
   # See note in the help.
   #
@@ -194,7 +196,23 @@ cd
 done"
 
     if [[ -n $v_enable_perf ]]; then
-      local perf_stats_file_name=${v_perf_stats_file_name_tmpl/THREADSNUM/$threads}
+      # Sample lines:
+      #
+      #     Creating thread 'worker' -> PID 11042
+      #     Creating thread 'CPU 0/TCG' -> PID 11043
+      #
+      local vcpu_pids
+      mapfile -t vcpu_pids < <(perl -lne 'print $1 if /CPU.+PID (\d+)/' "$c_qemu_debug_file")
+
+      if ((${#vcpu_pids[@]} != threads)); then
+        >&2 echo "Unexpected number of QEMU vCPU thread PIDS found: ${vcpu_pids[*]}"
+        exit 1
+      fi
+
+      local perf_pids_file_name=$v_perf_file_names_prefix.$threads.pids
+      printf '%s\n' "${vcpu_pids[@]}" > "$perf_pids_file_name"
+
+      local perf_stats_file_name=$v_perf_file_names_prefix.$threads.csv
       sudo perf stat -e "$c_perf_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
         2> "$perf_stats_file_name" &
       local perf_pid=$!

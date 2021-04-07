@@ -10,7 +10,6 @@
 #     perl -i.bak -pe 's/ ?isolcpus=[0-9,-]+//' /etc/default/grub
 #     update-grub
 #
-c_qemu_output_log_file=$(basename "${BASH_SOURCE[0]}").out.log
 
 # Generates threads numbers that exclude one cpu, e.g., for 32: 2, 4, 8, 16, 31, 62 (or 30, 60, depending
 # on the SMT being enabled or not.)
@@ -57,6 +56,7 @@ function boot_guest {
 
   "$c_qemu_binary" \
     -display none -daemonize \
+    -D "$c_qemu_debug_file" \
     -serial file:"$c_qemu_output_log_file" \
     -pidfile "$c_qemu_pidfile" \
     -machine virt \
