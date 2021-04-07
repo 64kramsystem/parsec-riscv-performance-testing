@@ -37,7 +37,7 @@ c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
 # see above for the SSH port
 
-c_perf_events=L1-dcache-load-misses,context-switches,migrations
+c_perf_events=L1-dcache-load-misses,context-switches,migrations,cycles,sched:sched_switch
 
 c_debug_log_file=$(basename "$0").log
 
@@ -59,6 +59,8 @@ Options:
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
+
+Perf stat events recorded: '"$c_perf_events"'
 
 ---
 
