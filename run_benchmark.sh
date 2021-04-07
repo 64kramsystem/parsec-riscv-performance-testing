@@ -160,15 +160,19 @@ function register_exit_handlers {
 }
 
 function run_benchmark {
-  local timings_file_name=$c_output_dir/$1.csv
   local benchmark_log_file_name=$c_output_dir/$1.log
-  local perf_file_names_prefix=$c_output_dir/$1.perf
 
   if [[ -z $v_enable_perf_stat ]]; then
-    echo "threads,run,run_time" > "$timings_file_name"
+    local timings_file_name=$c_output_dir/$1.csv
+  else
+    local timings_file_name=$c_output_dir/$1.perf_stat.csv
+    local perf_file_names_prefix=$c_output_dir/$1.perf_stat
+
+    rm -f "$perf_file_names_prefix"*
   fi
+
+  echo "threads,run,run_time" > "$timings_file_name"
   true > "$benchmark_log_file_name"
-  rm -f "$perf_file_names_prefix"*
 
   # See note in the help.
   #
@@ -210,6 +214,8 @@ done"
 
     shutdown_guest
   done
+
+  echo "> Timing results stored as \`$timings_file_name\`"
 }
 
 ####################################################################################################
@@ -243,9 +249,7 @@ function run_benchmark_thread_group {
 > TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
 " | tee -a "$benchmark_log_file_name"
 
-  if [[ -z $perf_pid ]]; then
-    store_timings "$threads" "$run_walltimes" "$timings_file_name"
-  fi
+  store_timings "$threads" "$run_walltimes" "$timings_file_name"
 
   # Restore logging.
   #
@@ -309,8 +313,8 @@ function extract_run_walltimes {
 
 function store_timings {
   local threads=$1
-  local run_walltimes=$2
-  local timings_file_name=$3
+  local run_walltimes=$3
+  local timings_file_name=$4
 
   local run=0
   while IFS= read -r -a run_walltime; do
@@ -394,5 +398,3 @@ set_host_system_configuration
 prepare_isolated_processors_list
 prepare_threads_number_list
 run_benchmark
-
-print_completion_message
