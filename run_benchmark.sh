@@ -23,6 +23,7 @@ c_output_dir=$(readlink -f "$(dirname "$0")")/output
 c_temp_dir=$(dirname "$(mktemp)")
 
 c_qemu_binary=$c_components_dir/qemu-system-riscv64
+c_qemu_debug_file=$(basename "$0").qemu_debug.log
 c_qemu_output_log_file=$(basename "$0").qemu_out.log
 
 # Easier to run on a fresh copy each time, as an image can be easily broken, and leads to problems on
