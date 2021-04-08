@@ -6,8 +6,9 @@ set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
 
+c_expected_header="threads,run,run_time"
 c_debug_log_file=$(basename "$0").log
-c_help='Usage: $(basename "$0") [-h|--help] [-s|--scale] [-o|--output diagram_file.ext] <input_files...>
+c_help='Usage: '"$(basename "$0")"' [-h|--help] [-s|--scale] [-o|--output diagram_file.ext] <input_files...>
 
 Produces a diagram from the specified files, using gnuplot.
 
@@ -15,7 +16,7 @@ If --output is specified, the format is picked up from the diagram file extensio
 
 The --scale option vertically scales, and superposes the lines, so that the shape can be directly compared.
 
-Input files are expected to be csv, with the column/values produced by the benchmark script.'
+Input files are expected to be csv, with the column/values produced by the benchmark script ('"$c_expected_header"'); the values for each group (threads,run) are averaged.'
 
 c_line_colors_palette=(
   ff0000
