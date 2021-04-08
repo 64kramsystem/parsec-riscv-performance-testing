@@ -278,10 +278,10 @@ function run_remote_command {
   #
   # Disabling the host checking is required, both because sshpass doesn't get along with the host checking
   # prompt, and because if the guest is changed (reset), SSH will complain.
-  #
+  # Set the ERROR log level, in order to skipt the warning about the host added to the known list
   #
   sshpass -p "$c_ssh_password" \
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
       -p "$c_ssh_port" "$c_ssh_user"@"$c_ssh_host" "$@" | tee /dev/stderr
 }
 
