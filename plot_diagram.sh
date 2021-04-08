@@ -127,9 +127,14 @@ function generate_standard_diagram {
   local gnuplot_command
 
   if [[ -n $v_output_file ]]; then
-  gnuplot_command+="\
+    gnuplot_command+="\
 set terminal $v_image_format background rgb 'white'
 set output '$v_output_file'
+
+"
+  else
+    gnuplot_command+="\
+set terminal wxt size 1600,900
 
 "
   fi
@@ -228,9 +233,14 @@ function generate_scaled_diagram {
   local gnuplot_command
 
   if [[ -n $v_output_file ]]; then
-  gnuplot_command+="\
+    gnuplot_command+="\
 set terminal $v_image_format background rgb 'white'
 set output '$v_output_file'
+
+"
+  else
+    gnuplot_command+="\
+set terminal wxt size 1600,900
 
 "
   fi
