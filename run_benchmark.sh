@@ -37,11 +37,12 @@ c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
 # see above for the SSH port
 
-c_perf_events=L1-dcache-load-misses,context-switches,migrations
+c_perf_stat_events=L1-dcache-load-misses,context-switches,migrations,cycles,sched:sched_switch
+c_perf_record_events=cpu-cycles
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -52,13 +53,19 @@ Example usage:
 Options:
 
 - `--no-smt`: Disables SMT
-- `--perf`: Run perf; when enabled, the timings file is not written
+- `--perf-stat`: Run perf stat; when enabled, the timings file is not written
+- `--perf-record`: Run perf record; when enabled, the timings file is not written
 - `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
 - `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
 
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
+WATCH OUT! Enabling both perf options will cause the runs to be doubled (as they presumably can'\''t be run in parallel).
+
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
+
+Perf stat events recorded: '"$c_perf_stat_events"'
+Perf record events recorded: '"$c_perf_record_events"'
 
 ---
 
@@ -76,16 +83,14 @@ The output CSV is be stored in the `'"$c_output_dir"'` subdirectory, with name `
 v_count_runs=     # int
 v_qemu_script=    # string
 v_bench_script=   # string
-v_enable_perf=    # boolean (false=blank, true=anything else)
+v_enable_perf_stat=  # boolean (false=blank, true=anything else)
+v_enable_perf_record=   # boolean (false=blank, true=anything else)
 v_disable_smt=    # boolean (false=blank, true=anything else)
 
 # Computed internally
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_timings_file_name=            # string
-v_benchmark_log_file_name=      # string
-v_perf_file_names_prefix=       # string
 v_thread_numbers_list=()        # array
 
 ####################################################################################################
@@ -93,7 +98,7 @@ v_thread_numbers_list=()        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hspm:M: --long help,no-smt,perf,min:,max: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspPm:M: --long help,no-smt,perf-stat,perf-record,min:,max: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -103,8 +108,11 @@ function decode_cmdline_args {
       -s|--no-smt)
         v_disable_smt=1
         shift ;;
-      -p|--perf)
-        v_enable_perf=1
+      -p|--perf-stat)
+        v_enable_perf_stat=1
+        shift ;;
+      -P|--perf-record)
+        v_enable_perf_record=1
         shift ;;
       -m|--min)
         v_min_threads=$2
@@ -123,9 +131,7 @@ function decode_cmdline_args {
     exit 1
   fi
 
-  v_timings_file_name=$c_output_dir/$1.csv
-  v_benchmark_log_file_name=$c_output_dir/$1.log
-  v_perf_file_names_prefix=$c_output_dir/$1.perf
+  v_bench_name=$1
   v_count_runs=$2
   v_qemu_script=$3
   v_bench_script=$4
@@ -162,12 +168,14 @@ function register_exit_handlers {
   }' EXIT
 }
 
+function clear_existing_data {
+  rm -f "$c_output_dir/$v_bench_name."*
+}
+
 function run_benchmark {
-  if [[ -z $v_enable_perf ]]; then
-    echo "threads,run,run_time" > "$v_timings_file_name"
-  fi
-  true > "$v_benchmark_log_file_name"
-  rm -f "$v_perf_file_names_prefix"*
+  local benchmark_log_file_name=$c_output_dir/$v_bench_name.log
+
+  true > "$benchmark_log_file_name"
 
   # See note in the help.
   #
@@ -184,7 +192,7 @@ function run_benchmark {
 ################################################################################
 > Threads: $threads ($(basename "$v_bench_script"))
 ################################################################################
-" | tee -a "$v_benchmark_log_file_name"
+" | tee -a "$benchmark_log_file_name"
 
     # The `cd` is for simulating a new session.
     #
@@ -195,76 +203,162 @@ ${benchmark_command}
 cd
 done"
 
-    if [[ -n $v_enable_perf ]]; then
-      # Sample lines:
+    if [[ -z $v_enable_perf_stat && -z $v_enable_perf_record ]]; then
+      local standard_timing_file_name="$c_output_dir/$v_bench_name.timings.csv"
+      local perf_pid=
+      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$standard_timing_file_name"
+    fi
+
+    # perf is killed inside the run_benchmark_thread_group() function, as we want to run profiling as
+    # tightly as around the benchmark execution.
+
+    if [[ -n $v_enable_perf_stat ]]; then
+      local perf_stat_timing_file_name="$c_output_dir/$v_bench_name.perf_stat.timings.csv"
+      local perf_pid
+      perf_pid=$(start_perf_stat "$threads")
+
+      # We don't need this in perf record, which is not per-thread.
       #
-      #     Creating thread 'worker' -> PID 11042
-      #     Creating thread 'CPU 0/TCG' -> PID 11043
-      #
-      local vcpu_pids
-      mapfile -t vcpu_pids < <(perl -lne 'print $1 if /CPU.+PID (\d+)/' "$c_qemu_debug_file")
+      store_vcpu_pids "$threads"
 
-      if ((${#vcpu_pids[@]} != threads)); then
-        >&2 echo "Unexpected number of QEMU vCPU thread PIDS found: ${vcpu_pids[*]}"
-        exit 1
-      fi
-
-      local perf_pids_file_name=$v_perf_file_names_prefix.$threads.pids
-      printf '%s\n' "${vcpu_pids[@]}" > "$perf_pids_file_name"
-
-      local perf_stats_file_name=$v_perf_file_names_prefix.$threads.csv
-      sudo perf stat -e "$c_perf_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," \
-        2> "$perf_stats_file_name" &
-      local perf_pid=$!
+      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
     fi
 
-    # Don't store the output in the script debug log - too verbose, and it has its own log.
-    #
-    set +x
+    if [[ -n $v_enable_perf_record ]]; then
+      local perf_record_timing_file_name="$c_output_dir/$v_bench_name.perf_record.timings.csv"
+      local perf_pid
+      perf_pid=$(start_perf_record "$threads")
 
-    local command_output
-    command_output=$(run_remote_command "$benchmark_command")
-
-    if [[ -n $v_enable_perf ]]; then
-      sudo pkill -INT -P "$perf_pid"
-    fi
-
-    echo "$command_output" >> "$v_benchmark_log_file_name"
-
-    # Watch out: The last newline is stripped; this avoids makes it simpler to handle it, due to commands
-    # generally appending a newline (echo, <<<), but it must not be forgotten.
-    #
-    local run_walltimes
-    run_walltimes=$(echo "$command_output" | perl -lne 'print $1 if /^ROI time measured: (\d+[.,]\d+)s/' | perl -pe 'chomp if eof')
-
-    # Restore logging.
-    #
-    set -x
-
-    echo "
-> TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
-" | tee -a "$v_benchmark_log_file_name"
-
-    local tot_run_walltimes
-    tot_run_walltimes=$(wc -l <<< "$run_walltimes")
-
-    if (( tot_run_walltimes != v_count_runs )); then
-      >&2 echo "Unexpected number of walltimes found: $tot_run_walltimes ($v_count_runs expected)"
-      exit 1
-    fi
-
-    if [[ -z $v_enable_perf ]]; then
-      local run=0
-      while IFS= read -r -a run_walltime; do
-        # Replace time comma with dot, it present.
-        #
-        echo "$threads,$run,${run_walltime/,/.}" >> "$v_timings_file_name"
-        (( ++run ))
-      done <<< "$run_walltimes"
+      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$perf_record_timing_file_name"
     fi
 
     shutdown_guest
   done
+
+  echo "> Benchmark completed."
+}
+
+####################################################################################################
+# INNER FUNCTIONS
+####################################################################################################
+
+function run_benchmark_thread_group {
+  local benchmark_command=$1
+  local perf_pid=$2
+  local threads=$3
+  local benchmark_log_file_name=$4
+  local timings_file_name=$5
+
+  if [[ ! -s $timings_file_name ]]; then
+    echo "threads,run,run_time" > "$timings_file_name"
+  fi
+
+  # Don't store the output in the script debug log - too verbose, and it has its own log.
+  #
+  set +x
+
+  local command_output
+  command_output=$(run_remote_command "$benchmark_command")
+
+  if [[ -n $perf_pid ]]; then
+    sudo pkill -INT -P "$perf_pid"
+  fi
+
+  echo "$command_output" >> "$benchmark_log_file_name"
+
+  local run_walltimes
+  run_walltimes=$(extract_run_walltimes "$command_output")
+
+  echo "
+> TIMES: $(echo -n "$run_walltimes" | tr $'\n' ',')
+" | tee -a "$benchmark_log_file_name"
+
+  store_timings "$threads" "$run_walltimes" "$timings_file_name"
+
+  # Restore logging.
+  #
+  set -x
+}
+
+function store_vcpu_pids {
+  local threads=$1
+
+  local output_file_name="$c_output_dir/$v_bench_name.pids.$(printf %03d "$threads").txt"
+
+  # Sample lines:
+  #
+  #     Creating thread 'worker' -> PID 11042
+  #     Creating thread 'CPU 0/TCG' -> PID 11043
+  #
+  local vcpu_pids
+  mapfile -t vcpu_pids < <(perl -lne 'print $1 if /CPU.+PID (\d+)/' "$c_qemu_debug_file")
+
+  if ((${#vcpu_pids[@]} != threads)); then
+    >&2 echo "Unexpected number of QEMU vCPU thread PIDS found: ${vcpu_pids[*]}"
+    exit 1
+  fi
+
+  printf '%s\n' "${vcpu_pids[@]}" > "$output_file_name"
+}
+
+# Returns (prints) the perf process pid.
+#
+function start_perf_stat {
+  local threads=$1
+
+  local output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
+
+  sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," 2> "$output_file_name" > /dev/null &
+
+  echo -n "$!"
+}
+
+# Returns (prints) the perf process pid.
+#
+function start_perf_record {
+  local threads=$1
+
+  local output_file_name="$c_output_dir/$v_bench_name.perf_record.data.$(printf %03d "$threads").dat"
+
+  sudo perf record -e "$c_perf_record_events" -g -p "$(< "$c_qemu_pidfile")" -o "$output_file_name" > /dev/null &
+
+  echo -n "$!"
+}
+
+# Returns (prints) the run walltimes (one per line).
+#
+# Watch out: The last newline is stripped; this avoids makes it simpler to handle it, due to commands
+# generally appending a newline (echo, <<<), but it must not be forgotten.
+#
+function extract_run_walltimes {
+  local command_output=$1
+
+  local run_walltimes
+  run_walltimes=$(echo "$command_output" | perl -lne 'print $1 if /^ROI time measured: (\d+[.,]\d+)s/' | perl -pe 'chomp if eof')
+
+  local count_run_walltimes
+  count_run_walltimes=$(wc -l <<< "$run_walltimes")
+
+  if (( count_run_walltimes != v_count_runs )); then
+    >&2 echo "Unexpected number of walltimes found: $count_run_walltimes ($v_count_runs expected)"
+    exit 1
+  fi
+
+  echo -n "$run_walltimes"
+}
+
+function store_timings {
+  local threads=$1
+  local run_walltimes=$2
+  local timings_file_name=$3
+
+  local run=0
+  while IFS= read -r -a run_walltime; do
+    # Replace time comma with dot, it present.
+    #
+    echo "$threads,$run,${run_walltime/,/.}" >> "$timings_file_name"
+    (( ++run ))
+  done <<< "$run_walltimes"
 }
 
 ####################################################################################################
@@ -339,6 +433,5 @@ register_exit_handlers
 set_host_system_configuration
 prepare_isolated_processors_list
 prepare_threads_number_list
+clear_existing_data
 run_benchmark
-
-print_completion_message

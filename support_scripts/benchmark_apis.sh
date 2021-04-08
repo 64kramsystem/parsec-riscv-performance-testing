@@ -85,11 +85,3 @@ function set_host_system_configuration {
     echo off | sudo tee /sys/devices/system/cpu/smt/control
   fi
 }
-
-function print_completion_message {
-  if [[ -z $v_enable_perf ]]; then
-    echo "> Timing results stored as \`$v_timings_file_name\`"
-  else
-    echo "> Timing results NOT stored."
-  fi
-}
