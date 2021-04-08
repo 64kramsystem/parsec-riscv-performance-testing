@@ -175,7 +175,10 @@ plot \\
     echo "$gnuplot_command" | gnuplot
     xdg-open "$v_output_file"
   else
-    echo "$gnuplot_command" | gnuplot --persist
+    gnuplot_command+="
+pause mouse close"
+
+    echo "$gnuplot_command" | gnuplot
   fi
 }
 
@@ -275,7 +278,10 @@ unset multiplot"
     echo "$gnuplot_command" | gnuplot
     xdg-open "$v_output_file"
   else
-    echo "$gnuplot_command" | gnuplot --persist
+    gnuplot_command+="
+pause mouse close"
+
+    echo "$gnuplot_command" | gnuplot
   fi
 }
 
