@@ -6,8 +6,9 @@ set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
 
+c_expected_header="threads,run,run_time"
 c_debug_log_file=$(basename "$0").log
-c_help='Usage: $(basename "$0") [-h|--help] [-s|--scale] [-o|--output diagram_file.ext] <input_files...>
+c_help='Usage: '"$(basename "$0")"' [-h|--help] [-s|--scale] [-o|--output diagram_file.ext] [-d|--dir] <input_files...>
 
 Produces a diagram from the specified files, using gnuplot.
 
@@ -15,7 +16,9 @@ If --output is specified, the format is picked up from the diagram file extensio
 
 The --scale option vertically scales, and superposes the lines, so that the shape can be directly compared.
 
-Input files are expected to be csv, with the column/values produced by the benchmark script.'
+The --dir option adds the directory name as prefix, in case the files have the same name.
+
+Input files are expected to be csv, with the column/values produced by the benchmark script ('"$c_expected_header"'); the values for each group (threads,run) are averaged.'
 
 c_line_colors_palette=(
   ff0000
@@ -32,6 +35,7 @@ c_line_colors_palette=(
 v_scale_lines=                 # boolean (blank/anything else)
 v_output_file=                 # string
 v_input_files=                 # array
+v_add_dir_to_name=             # boolean
 
 # Computed internally
 #
@@ -42,7 +46,7 @@ v_image_format=  # string
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hso: --long help,scale,output: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hsdo: --long help,scale,dir,output: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
@@ -51,6 +55,9 @@ function decode_cmdline_args {
         exit 0 ;;
       -s|--scale)
         v_scale_lines=1
+        shift ;;
+      -d|--dir)
+        v_add_dir_to_name=1
         shift ;;
       -o|--output)
         v_output_file=$2
@@ -84,6 +91,18 @@ function init_debug_log {
   set -x
 }
 
+function check_diagrams_header {
+  for input_file in "${v_input_files}"; do
+    local actual_header
+    actual_header=$(head -n 1 "$input_file")
+
+    if [[ $actual_header != $c_expected_header ]]; then
+      echo "The header of the file $(basename "$input_file") ($actual_header) is not as expected ($c_expected_header)."
+      exit 1
+    fi
+  done
+}
+
 # Sample of generated commands:
 #
 #     set terminal svg background rgb 'white'
@@ -108,9 +127,14 @@ function generate_standard_diagram {
   local gnuplot_command
 
   if [[ -n $v_output_file ]]; then
-  gnuplot_command+="\
+    gnuplot_command+="\
 set terminal $v_image_format background rgb 'white'
 set output '$v_output_file'
+
+"
+  else
+    gnuplot_command+="\
+set terminal wxt size 1600,900
 
 "
   fi
@@ -146,7 +170,12 @@ plot \\
     cat "$input_file" | print_input_csv_averages > "$processed_input_file"
 
     local line_title
-    line_title=$(echo "$input_file" | perl -ne 'print /([^\/]+)\.csv$/')
+
+    if [[ -z $v_add_dir_to_name ]]; then
+      line_title=$(echo "$input_file" | perl -ne 'print /([^\/]+)\.csv$/')
+    else
+      line_title=$(echo "$input_file" | perl -ne 'print /([^\/]*\/[^\/]+)\.csv$/')
+    fi
 
     # 'using M:N': find data in columns M and N
     # 'xtic': print only the x tics for the line values
@@ -162,7 +191,10 @@ plot \\
     echo "$gnuplot_command" | gnuplot
     xdg-open "$v_output_file"
   else
-    echo "$gnuplot_command" | gnuplot --persist
+    gnuplot_command+="
+pause mouse close"
+
+    echo "$gnuplot_command" | gnuplot
   fi
 }
 
@@ -201,9 +233,14 @@ function generate_scaled_diagram {
   local gnuplot_command
 
   if [[ -n $v_output_file ]]; then
-  gnuplot_command+="\
+    gnuplot_command+="\
 set terminal $v_image_format background rgb 'white'
 set output '$v_output_file'
+
+"
+  else
+    gnuplot_command+="\
+set terminal wxt size 1600,900
 
 "
   fi
@@ -262,7 +299,10 @@ unset multiplot"
     echo "$gnuplot_command" | gnuplot
     xdg-open "$v_output_file"
   else
-    echo "$gnuplot_command" | gnuplot --persist
+    gnuplot_command+="
+pause mouse close"
+
+    echo "$gnuplot_command" | gnuplot
   fi
 }
 
@@ -294,6 +334,8 @@ for threads, run_times in sorted(all_run_times.items()):
 
 decode_cmdline_args "$@"
 init_debug_log
+
+check_diagrams_header
 
 if [[ -z $v_scale_lines ]]; then
   generate_standard_diagram
