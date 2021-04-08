@@ -6,7 +6,7 @@ set -o nounset
 set -o errtrace
 shopt -s inherit_errexit
 
-c_scripts_dir=$(readlink -f "$(dirname "$0")")/support_scripts
+c_scripts_dir=support_scripts
 c_scripts_name_prefix=bench_parsec_
 c_program_names=(
   blackscholes
@@ -24,7 +24,7 @@ c_program_names=(
   water_nsquared
   water_spatial
 )
-c_run_benchmark_script=$(dirname "$0")/run_benchmark.sh
+c_run_benchmark_script=./run_benchmark.sh
 
 c_help="Usage: $(basename "$0") [-s|--no-smt] [-p|--perf] [-m|--min <threads>] [-M|--max <threads>] <system_name> <runs> <qemu_boot_script>
 
@@ -86,6 +86,8 @@ function cache_sudo {
 }
 
 function run_suites {
+  cd "$(readlink -f "$(dirname "$0")")"/..
+
   for program_name in "${c_program_names[@]}"; do
     local benchmark_script=$c_scripts_dir/${c_scripts_name_prefix}$program_name.sh
 
