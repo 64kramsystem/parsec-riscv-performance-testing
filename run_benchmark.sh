@@ -190,7 +190,7 @@ function run_benchmark {
 
     echo "
 ################################################################################
-> Threads: $threads ($(basename "$v_bench_script"))
+> Threads: $threads ($v_bench_name)
 ################################################################################
 " | tee -a "$benchmark_log_file_name"
 
