@@ -1,7 +1,5 @@
 c_input_type=simlarge
 
-# The benchmark accepts only threads == 2ⁿ.
-#
 function prepare_threads_number_list {
   local thread_numbers_list=""
 
