@@ -85,6 +85,18 @@ function init_debug_log {
   set -x
 }
 
+function check_diagrams_header {
+  for input_file in "${v_input_files}"; do
+    local actual_header
+    actual_header=$(head -n 1 "$input_file")
+
+    if [[ $actual_header != $c_expected_header ]]; then
+      echo "The header of the file $(basename "$input_file") ($actual_header) is not as expected ($c_expected_header)."
+      exit 1
+    fi
+  done
+}
+
 # Sample of generated commands:
 #
 #     set terminal svg background rgb 'white'
@@ -295,6 +307,8 @@ for threads, run_times in sorted(all_run_times.items()):
 
 decode_cmdline_args "$@"
 init_debug_log
+
+check_diagrams_header
 
 if [[ -z $v_scale_lines ]]; then
   generate_standard_diagram
