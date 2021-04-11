@@ -15,7 +15,7 @@ function boot_guest {
     -kernel "$c_kernel_image" \
     -bios "$c_bios_image" \
     -append "root=/dev/vda ro console=ttyS0" \
-    -drive file="$c_guest_image_temp",format=qcow2,id=hd0 \
+    -drive file="$c_guest_image",format=raw,id=hd0 \
     -device virtio-blk-device,drive=hd0 \
     -device virtio-net-device,netdev=usernet \
     -netdev user,id=usernet,hostfwd=tcp::"$c_ssh_port"-:22

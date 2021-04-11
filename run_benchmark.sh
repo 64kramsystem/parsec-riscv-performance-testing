@@ -34,8 +34,7 @@ c_qemu_output_log_file=$(basename "$0").qemu_out.log
 # startup.
 #
 c_guest_memory=8G
-c_guest_image_source=$c_components_dir/busybear.qcow2
-c_guest_image_temp=$c_temp_dir/busybear.temp.qcow2 # must be qcow2
+c_guest_image=$c_components_dir/busybear.raw
 c_kernel_image=$c_components_dir/Image
 c_bios_image=$c_components_dir/fw_dynamic.bin
 c_qemu_pidfile=$c_temp_dir/$(basename "$0").qemu.pid
@@ -163,9 +162,9 @@ function load_includes {
 }
 
 function copy_busybear_image {
-  echo "Creating BusyBear run image..."
+  echo "Restoring BusyBear run image..."
 
-  qemu-img create -f qcow2 -b "$c_guest_image_source" "$c_guest_image_temp"
+  sudo zfs rollback rpool/busy@unchanged
 }
 
 # Since we copy the image each time, we can just kill QEMU. We leave the run image, if debug is needed.
@@ -506,7 +505,7 @@ function shutdown_guest {
   # In some cases (unclear why, for PARSEC freqmine), the image file would still be locked by the next
   # thread group, implying that QEMU is still on. For this reason, an extra check is needed.
   #
-  while [[ -f $c_qemu_pidfile || $(lsof "$c_guest_image_temp" 2> /dev/null || true) != "" ]]; do
+  while [[ -f $c_qemu_pidfile || $(lsof "$c_guest_image" 2> /dev/null || true) != "" ]]; do
     sleep 0.5
   done
 }
