@@ -92,11 +92,11 @@ function init_debug_log {
 }
 
 function check_diagrams_header {
-  for input_file in "${v_input_files}"; do
+  for input_file in "${v_input_files[@]}"; do
     local actual_header
     actual_header=$(head -n 1 "$input_file")
 
-    if [[ $actual_header != $c_expected_header ]]; then
+    if [[ $actual_header != "$c_expected_header" ]]; then
       echo "The header of the file $(basename "$input_file") ($actual_header) is not as expected ($c_expected_header)."
       exit 1
     fi

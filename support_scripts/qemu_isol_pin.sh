@@ -36,8 +36,6 @@ function prepare_threads_number_list {
       v_thread_numbers_list+=("$threads_number")
     fi
   done
-
-  echo "Threads number list: ${v_thread_numbers_list[*]}"
 }
 
 # Input: $1=Number of vCPUs.

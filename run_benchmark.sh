@@ -10,8 +10,11 @@ shopt -s inherit_errexit
 # VARIABLES/CONSTANTS
 ####################################################################################################
 
-v_min_threads=2
-v_max_threads=128
+# v_min/v_max are mutually exclusive with v_thread_numbers.
+#
+v_min_threads=2            # int
+v_max_threads=128          # int
+v_thread_numbers_list=()   # array
 
 c_ssh_user=root
 c_ssh_password=busybear
@@ -42,7 +45,7 @@ c_perf_record_events=cpu-cycles
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-t|--threads <threads_spec>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -55,8 +58,7 @@ Options:
 - `--no-smt`: Disables SMT
 - `--perf-stat`: Run perf stat; when enabled, the timings file is not written
 - `--perf-record`: Run perf record; only on run per thread group is executed, ignoring the <run> parameter
-- `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
-- `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
+- `--threads <threads_spec>`: Set threads number specification (see below); defaults to '"$v_min_threads-$v_max_threads"'
 
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
@@ -66,6 +68,11 @@ WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in t
 
 Perf stat events recorded: '"$c_perf_stat_events"'
 Perf record events recorded: '"$c_perf_record_events"'
+
+The number of threads can be specified in two formats:
+
+- `<min>-<max>`: the thread numbers are calculated by the benchmark script, with minimum and maximum specified by this option;
+- `a,b,c`: the thread numbers are those specified; the benchmark script calculation is ignored.
 
 ---
 
@@ -91,14 +98,15 @@ v_disable_smt=    # boolean (false=blank, true=anything else)
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_thread_numbers_list=()        # array
 
 ####################################################################################################
 # MAIN FUNCTIONS
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hspPm:M: --long help,no-smt,perf-stat,perf-record,min:,max: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspPt: --long help,no-smt,perf-stat,perf-record,threads: --name "$(basename "$0")" -- "$@")"
+
+  local threads_spec=
 
   while true ; do
     case "$1" in
@@ -114,11 +122,8 @@ function decode_cmdline_args {
       -P|--perf-record)
         v_enable_perf_record=1
         shift ;;
-      -m|--min)
-        v_min_threads=$2
-        shift 2 ;;
-      -M|--max)
-        v_max_threads=$2
+      -t|--threads)
+        set_thread_numbers "$2"
         shift 2 ;;
       --)
         shift
@@ -176,6 +181,8 @@ function run_benchmark {
   local benchmark_log_file_name=$c_output_dir/$v_bench_name.log
 
   true > "$benchmark_log_file_name"
+
+  echo "Threads number list: ${v_thread_numbers_list[*]}"
 
   # See note in the help.
   #
@@ -287,7 +294,8 @@ done"
 function store_vcpu_pids {
   local threads=$1
 
-  local output_file_name="$c_output_dir/$v_bench_name.pids.$(printf %03d "$threads").txt"
+  local output_file_name
+  output_file_name="$c_output_dir/$v_bench_name.pids.$(printf %03d "$threads").txt"
 
   # Sample lines:
   #
@@ -310,7 +318,8 @@ function store_vcpu_pids {
 function start_perf_stat {
   local threads=$1
 
-  local output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
+  local output_file_name
+  output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
 
   sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," 2> "$output_file_name" > /dev/null &
 
@@ -322,7 +331,8 @@ function start_perf_stat {
 function start_perf_record {
   local threads=$1
 
-  local output_file_name="$c_output_dir/$v_bench_name.perf_record.data.$(printf %03d "$threads").dat"
+  local output_file_name
+  output_file_name="$c_output_dir/$v_bench_name.perf_record.data.$(printf %03d "$threads").dat"
 
   sudo perf record -e "$c_perf_record_events" -g -p "$(< "$c_qemu_pidfile")" -o "$output_file_name" > /dev/null &
 
@@ -368,6 +378,30 @@ function store_timings {
 ####################################################################################################
 # HELPERS
 ####################################################################################################
+
+function set_thread_numbers {
+  local threads_spec=$1
+
+  if [[ -z $threads_spec ]]; then
+    return
+  elif [[ $threads_spec =~ ^([[:digit:]]+)-([[:digit:]]+)$ ]]; then
+    v_min_threads=${BASH_REMATCH[1]}
+    v_max_threads=${BASH_REMATCH[2]}
+
+    # Easy mistake :)
+    #
+    if ((v_min_threads > 0)); then
+      return
+    fi
+  elif [[ $threads_spec =~ ^[[:digit:]]+(,[[:digit:]]+)*$ ]]; then
+    mapfile -td, v_thread_numbers_list < <(echo -n "$threads_spec")
+
+    return
+  fi
+
+  >&2 echo 'Invalid threads spec (see help): `'"$threads_spec"'`'
+  exit 1
+}
 
 # Input: $@=ssh params
 #
@@ -436,6 +470,8 @@ register_exit_handlers
 
 set_host_system_configuration
 prepare_isolated_processors_list
-prepare_threads_number_list
+if ((${#v_thread_numbers_list[@]} == 0)); then
+  prepare_threads_number_list
+fi
 clear_existing_data
 run_benchmark

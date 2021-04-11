@@ -11,7 +11,7 @@ c_scripts_name_prefix=bench_parsec_
 c_qemu_script_name=$c_scripts_dir/qemu_basic.sh
 c_run_benchmark_script=$(dirname "$0")/run_benchmark.sh
 
-c_help="Usage: $(basename "$0") [-s|--no-smt] [-p|--perf] [-m|--min <threads>] [-M|--max <threads>] <system_name> <runs>
+c_help="Usage: $(basename "$0") [-s|--no-smt] [-p|--perf] [-t|--threads <threads_spec>] <system_name> <runs>
 
 Runs all the parsec benchmarks, appending the <system_name> to the benchmark name(s).
 
@@ -22,24 +22,18 @@ v_system_name=                # string
 v_count_runs=                 # int
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hspm:M: --long help,no-smt,perf,min:,max: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspt: --long help,no-smt,perf,threads: --name "$(basename "$0")" -- "$@")"
 
   while true ; do
     case "$1" in
       -h|--help)
         echo "$c_help"
         exit 0 ;;
-      -s|--no-smt)
-        v_run_script_args+=(--no-smt)
+      -s|--no-smt|-p|--perf)
+        v_run_script_args+=("$1")
         shift ;;
-      -p|--perf)
-        v_run_script_args+=(--perf)
-        shift ;;
-      -m|--min)
-        v_run_script_args+=(--min "$2")
-        shift 2 ;;
-      -M|--max)
-        v_run_script_args+=(--max "$2")
+      -t|--threads)
+        v_run_script_args+=("$1" "$2")
         shift 2 ;;
       --)
         shift

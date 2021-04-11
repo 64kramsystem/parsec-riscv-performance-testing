@@ -72,8 +72,6 @@ function prepare_threads_number_list {
   # Really ugly, but standard, bash way of creating a sorted array.
   #
   mapfile -t v_thread_numbers_list < <(echo -n "$thread_numbers_list" | sort -n)
-
-  echo "Threads number list: ${v_thread_numbers_list[*]}"
 }
 
 # WATCH OUT! If SMT is disabled, all the `/sys/devices/system/cpu/cpu*` files will be still present,
