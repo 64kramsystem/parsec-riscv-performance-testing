@@ -10,8 +10,11 @@ shopt -s inherit_errexit
 # VARIABLES/CONSTANTS
 ####################################################################################################
 
+# v_min/v_max are mutually exclusive with v_thread_numbers.
+#
 v_min_threads=2            # int
 v_max_threads=128          # int
+v_thread_numbers_list=()   # array
 
 c_ssh_user=root
 c_ssh_password=busybear
@@ -55,7 +58,7 @@ Options:
 - `--no-smt`: Disables SMT
 - `--perf-stat`: Run perf stat; when enabled, the timings file is not written
 - `--perf-record`: Run perf record; only on run per thread group is executed, ignoring the <run> parameter
-- `--threads <min>-<max>`: Set the minimum/maximum threads (both ends are closed); defaults to '"$v_min_threads-$v_max_threads"'
+- `--threads <threads_spec>`: Set threads number specification (see below); defaults to '"$v_min_threads-$v_max_threads"'
 
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
@@ -65,6 +68,11 @@ WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in t
 
 Perf stat events recorded: '"$c_perf_stat_events"'
 Perf record events recorded: '"$c_perf_record_events"'
+
+The number of threads can be specified in two formats:
+
+- `<min>-<max>`: the thread numbers are calculated by the benchmark script, with minimum and maximum specified by this option;
+- `a,b,c`: the thread numbers are those specified; the benchmark script calculation is ignored.
 
 ---
 
@@ -90,7 +98,6 @@ v_disable_smt=    # boolean (false=blank, true=anything else)
 #
 v_previous_smt_configuration=   # string
 v_isolated_processors=()        # array
-v_thread_numbers_list=()        # array
 
 ####################################################################################################
 # MAIN FUNCTIONS
@@ -116,7 +123,7 @@ function decode_cmdline_args {
         v_enable_perf_record=1
         shift ;;
       -t|--threads)
-        set_min_max_threads "$2"
+        set_thread_numbers "$2"
         shift 2 ;;
       --)
         shift
@@ -370,7 +377,7 @@ function store_timings {
 # HELPERS
 ####################################################################################################
 
-function set_min_max_threads {
+function set_thread_numbers {
   local threads_spec=$1
 
   if [[ -z $threads_spec ]]; then
@@ -384,6 +391,10 @@ function set_min_max_threads {
     if ((v_min_threads > 0)); then
       return
     fi
+  elif [[ $threads_spec =~ ^[[:digit:]]+(,[[:digit:]]+)*$ ]]; then
+    mapfile -td, v_thread_numbers_list < <(echo -n "$threads_spec")
+
+    return
   fi
 
   >&2 echo 'Invalid threads spec (see help): `'"$threads_spec"'`'
@@ -457,6 +468,8 @@ register_exit_handlers
 
 set_host_system_configuration
 prepare_isolated_processors_list
-prepare_threads_number_list
+if ((${#v_thread_numbers_list[@]} == 0)); then
+  prepare_threads_number_list
+fi
 clear_existing_data
 run_benchmark
