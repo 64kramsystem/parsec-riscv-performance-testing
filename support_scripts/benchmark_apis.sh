@@ -8,6 +8,18 @@ function init_debug_log {
   set -x
 }
 
+# Ask sudo permissions only once over the runtime of the script.
+#
+function cache_sudo {
+  sudo -v
+
+  while true; do
+    sleep 60
+    kill -0 "$$" || exit
+    sudo -nv
+  done 2>/dev/null &
+}
+
 function find_host_system_configuration_options {
   v_previous_smt_configuration=$(cat /sys/devices/system/cpu/smt/control)
 }

@@ -465,6 +465,7 @@ load_includes
 create_directories
 copy_busybear_image
 init_debug_log
+cache_sudo
 find_host_system_configuration_options
 register_exit_handlers
 
