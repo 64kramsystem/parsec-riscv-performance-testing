@@ -182,6 +182,8 @@ function run_benchmark {
 
   true > "$benchmark_log_file_name"
 
+  echo "Threads number list: ${v_thread_numbers_list[*]}"
+
   # See note in the help.
   #
   # Originally, the strategy was to use the run number in the outer cycle, with the rationale that variations

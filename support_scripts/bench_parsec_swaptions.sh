@@ -27,8 +27,6 @@ function prepare_threads_number_list {
   done
 
   mapfile -t v_thread_numbers_list < <(echo -n "$thread_numbers_list" | sort -n)
-
-  echo "Threads number list: ${v_thread_numbers_list[*]}"
 }
 
 # Input: $1=Number of threads.
