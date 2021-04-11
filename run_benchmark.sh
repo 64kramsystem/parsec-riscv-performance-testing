@@ -268,14 +268,15 @@ done"
   #
   set +x
 
+  # Ideally, we wouldn't run another program (`tee`) during the benchmarks, however, it's crucial for
+  # being able to start `perf` when a certain pattern is matched.
+  #
   local command_output
-  command_output=$(run_remote_command "$benchmark_command")
+  command_output=$(run_remote_command "$benchmark_command" | tee -a "$benchmark_log_file_name")
 
   if [[ -n $perf_pid ]]; then
     sudo pkill -INT -P "$perf_pid"
   fi
-
-  echo "$command_output" >> "$benchmark_log_file_name"
 
   local run_walltimes
   run_walltimes=$(extract_run_walltimes "$command_output")
