@@ -12,6 +12,7 @@ runs=$1
 qemu_script=$2
 test_prefix=$(perl -ne 'print /qemu_(.+).sh/' <<< "$qemu_script")
 
+# shellcheck disable=SC2164
 cd "$(readlink -f "$(dirname "$0")")"/..
 
 # Hung twice

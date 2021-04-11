@@ -285,7 +285,8 @@ done"
 function store_vcpu_pids {
   local threads=$1
 
-  local output_file_name="$c_output_dir/$v_bench_name.pids.$(printf %03d "$threads").txt"
+  local output_file_name
+  output_file_name="$c_output_dir/$v_bench_name.pids.$(printf %03d "$threads").txt"
 
   # Sample lines:
   #
@@ -308,7 +309,8 @@ function store_vcpu_pids {
 function start_perf_stat {
   local threads=$1
 
-  local output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
+  local output_file_name
+  output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
 
   sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," 2> "$output_file_name" > /dev/null &
 
@@ -320,7 +322,8 @@ function start_perf_stat {
 function start_perf_record {
   local threads=$1
 
-  local output_file_name="$c_output_dir/$v_bench_name.perf_record.data.$(printf %03d "$threads").dat"
+  local output_file_name
+  output_file_name="$c_output_dir/$v_bench_name.perf_record.data.$(printf %03d "$threads").dat"
 
   sudo perf record -e "$c_perf_record_events" -g -p "$(< "$c_qemu_pidfile")" -o "$output_file_name" > /dev/null &
 
