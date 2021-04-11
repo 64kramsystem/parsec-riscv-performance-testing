@@ -14,6 +14,7 @@ test_prefix=$(perl -ne 'print /qemu_(.+).sh/' <<< "$qemu_script")
 
 cd "$(readlink -f "$(dirname "$0")")"/..
 
+# ferret is unstable
 ./run_benchmark.sh  "${test_prefix}_blackscholes"   "$runs" "$qemu_script" support_scripts/bench_parsec_blackscholes.sh
 ./run_benchmark.sh  "${test_prefix}_bodytrack"      "$runs" "$qemu_script" support_scripts/bench_parsec_bodytrack.sh
 ./run_benchmark.sh  "${test_prefix}_cholesky"       "$runs" "$qemu_script" support_scripts/bench_parsec_cholesky.sh
