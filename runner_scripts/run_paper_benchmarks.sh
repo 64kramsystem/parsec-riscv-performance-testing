@@ -45,14 +45,11 @@ function decode_cmdline_args {
       -h|--help)
         echo "$c_help"
         exit 0 ;;
-      -s|--no-smt)
-        v_run_script_args+=(--no-smt)
-        shift ;;
-      -p|--perf)
-        v_run_script_args+=(--perf)
+      -s|--no-smt|-p|--perf)
+        v_run_script_args+=("$1")
         shift ;;
       -t|--threads)
-        v_run_script_args+=(--threads "$2")
+        v_run_script_args+=("$1" "$2")
         shift 2 ;;
       --)
         shift
