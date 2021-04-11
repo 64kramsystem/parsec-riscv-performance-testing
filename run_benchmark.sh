@@ -194,19 +194,10 @@ function run_benchmark {
 ################################################################################
 " | tee -a "$benchmark_log_file_name"
 
-    # The `cd` is for simulating a new session.
-    #
-    local benchmark_command
-    benchmark_command=$(compose_benchmark_command "$threads")
-    benchmark_command="for ((run=0; run < $v_count_runs; run++)); do
-${benchmark_command}
-cd
-done"
-
     if [[ -z $v_enable_perf_stat && -z $v_enable_perf_record ]]; then
       local standard_timing_file_name="$c_output_dir/$v_bench_name.timings.csv"
       local perf_pid=
-      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$standard_timing_file_name"
+      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$standard_timing_file_name"
     fi
 
     # perf is killed inside the run_benchmark_thread_group() function, as we want to run profiling as
@@ -221,7 +212,7 @@ done"
       #
       store_vcpu_pids "$threads"
 
-      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
+      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
     fi
 
     if [[ -n $v_enable_perf_record ]]; then
@@ -229,7 +220,7 @@ done"
       local perf_pid
       perf_pid=$(start_perf_record "$threads")
 
-      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$perf_record_timing_file_name"
+      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_record_timing_file_name"
     fi
 
     shutdown_guest
@@ -243,11 +234,23 @@ done"
 ####################################################################################################
 
 function run_benchmark_thread_group {
-  local benchmark_command=$1
-  local perf_pid=$2
-  local threads=$3
+  local perf_pid=$1
+  local threads=$2
+  local runs=$3
   local benchmark_log_file_name=$4
   local timings_file_name=$5
+
+  # The `cd` is for simulating a new session.
+  #
+  local benchmark_command
+  benchmark_command=$(compose_benchmark_command "$threads")
+
+  if ((runs > 1)); then
+    benchmark_command="for ((run=0; run < $runs; run++)); do
+${benchmark_command}
+cd
+done"
+  fi
 
   if [[ ! -s $timings_file_name ]]; then
     echo "threads,run,run_time" > "$timings_file_name"
