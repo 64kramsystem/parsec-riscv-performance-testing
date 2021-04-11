@@ -45,7 +45,7 @@ c_perf_record_events=cpu-cycles
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-t|--threads <threads_spec>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-m|--perf-record-match <pattern>] [-t|--threads <threads_spec>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -59,10 +59,13 @@ Options:
 - `--perf-stat`: Run perf stat; when enabled, the timings file is not written
 - `--perf-record`: Run perf record; only on run per thread group is executed, ignoring the <run> parameter
 - `--threads <threads_spec>`: Set threads number specification (see below); defaults to '"$v_min_threads-$v_max_threads"'
+- `--perf-record-match <pattern>`: Start profiling only when a certain (sed) pattern matches
 
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
 WATCH OUT! Specifying any of the perf options will disable the standard benchmark.
+
+WATCH OUT! If the benchmark is very short-running, `--perf-record-match` may miss the window; empirically, it'\''s quick to react (subsecond), but it'\''s certainly not instantaneous.
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -92,6 +95,7 @@ v_qemu_script=    # string
 v_bench_script=   # string
 v_enable_perf_stat=  # boolean (false=blank, true=anything else)
 v_enable_perf_record=   # boolean (false=blank, true=anything else)
+v_perf_record_pattern=  # string
 v_disable_smt=    # boolean (false=blank, true=anything else)
 
 # Computed internally
@@ -104,7 +108,7 @@ v_isolated_processors=()        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hspPt: --long help,no-smt,perf-stat,perf-record,threads: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspPm:t: --long help,no-smt,perf-stat,perf-record,perf-record-match:,threads: --name "$(basename "$0")" -- "$@")"
 
   local threads_spec=
 
@@ -122,6 +126,9 @@ function decode_cmdline_args {
       -P|--perf-record)
         v_enable_perf_record=1
         shift ;;
+      -m|--perf-record-match)
+        v_perf_record_pattern=$2
+        shift 2 ;;
       -t|--threads)
         set_thread_numbers "$2"
         shift 2 ;;
@@ -203,8 +210,7 @@ function run_benchmark {
 
     if [[ -z $v_enable_perf_stat && -z $v_enable_perf_record ]]; then
       local standard_timing_file_name="$c_output_dir/$v_bench_name.timings.csv"
-      local perf_pid=
-      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$standard_timing_file_name"
+      run_benchmark_thread_group "$threads" "$v_count_runs" "$benchmark_log_file_name" "$standard_timing_file_name"
     fi
 
     # perf is killed inside the run_benchmark_thread_group() function, as we want to run profiling as
@@ -212,23 +218,21 @@ function run_benchmark {
 
     if [[ -n $v_enable_perf_stat ]]; then
       local perf_stat_timing_file_name="$c_output_dir/$v_bench_name.perf_stat.timings.csv"
-      local perf_pid
-      perf_pid=$(start_perf_stat "$threads")
+      start_perf_stat "$threads"
 
       # We don't need this in perf record, which is not per-thread.
       #
       store_vcpu_pids "$threads"
 
-      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
+      run_benchmark_thread_group "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
     fi
 
     if [[ -n $v_enable_perf_record ]]; then
       local runs=1
       local perf_record_timing_file_name="$c_output_dir/$v_bench_name.perf_record.timings.csv"
-      local perf_pid
-      perf_pid=$(start_perf_record "$threads")
+      start_perf_record "$threads" "$benchmark_log_file_name"
 
-      run_benchmark_thread_group "$perf_pid" "$threads" "$runs" "$benchmark_log_file_name" "$perf_record_timing_file_name"
+      run_benchmark_thread_group "$threads" "$runs" "$benchmark_log_file_name" "$perf_record_timing_file_name"
     fi
 
     shutdown_guest
@@ -242,11 +246,10 @@ function run_benchmark {
 ####################################################################################################
 
 function run_benchmark_thread_group {
-  local perf_pid=$1
-  local threads=$2
-  local runs=$3
-  local benchmark_log_file_name=$4
-  local timings_file_name=$5
+  local threads=$1
+  local runs=$2
+  local benchmark_log_file_name=$3
+  local timings_file_name=$4
 
   # The `cd` is for simulating a new session.
   #
@@ -268,14 +271,29 @@ done"
   #
   set +x
 
+  # Ideally, we wouldn't run another program (`tee`) during the benchmarks, however, it's crucial for
+  # being able to start `perf` when a certain pattern is matched.
+  #
   local command_output
-  command_output=$(run_remote_command "$benchmark_command")
+  command_output=$(run_remote_command "$benchmark_command" | tee -a "$benchmark_log_file_name")
 
-  if [[ -n $perf_pid ]]; then
-    sudo pkill -INT -P "$perf_pid"
+  if [[ -n $v_enable_perf_stat || -n $v_enable_perf_record ]]; then
+    echo "> Killing perf (may take a while)..."
+
+    # Blanket killing is not a clean solution, however, since perf is running in a background subshell,
+    # handling the PID tree is an unholy mess for a few reasons.
+    #
+    local perfs_killed
+    perfs_killed=$(sudo pkill --echo --full '^/.+/perf record' | wc -l)
+
+    if ((perfs_killed != 1)); then
+      >&2 echo "WATCH OUT! Killed $perfs_killed perf processes - 1 expected."
+    fi
+
+    # There may be a lot of data to write, and the process is in the background.
+    #
+    while pgrep -f '/perf record' > /dev/null; do sleep 0.1; done
   fi
-
-  echo "$command_output" >> "$benchmark_log_file_name"
 
   local run_walltimes
   run_walltimes=$(extract_run_walltimes "$command_output")
@@ -322,21 +340,29 @@ function start_perf_stat {
   output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
 
   sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," 2> "$output_file_name" > /dev/null &
-
-  echo -n "$!"
 }
 
 # Returns (prints) the perf process pid.
 #
 function start_perf_record {
   local threads=$1
+  local benchmark_log_file_name=$2
 
   local output_file_name
   output_file_name="$c_output_dir/$v_bench_name.perf_record.data.$(printf %03d "$threads").dat"
 
-  sudo perf record -e "$c_perf_record_events" -g -p "$(< "$c_qemu_pidfile")" -o "$output_file_name" > /dev/null &
+  {
+    if [[ -n $v_perf_record_pattern ]]; then
+      sh -c "tail --pid=\$\$ -f $(printf "%q" "$benchmark_log_file_name") | { sed -n $(printf "%q" "/$v_perf_record_pattern/ q") && kill \$\$; }" || true
+    fi
 
-  echo -n "$!"
+    echo "> Starting perf record..."
+
+    # Watch out! If this function's output will be captured via command substitution, must add disconnect
+    # from stdout, otherwise, it will block.
+    #
+    sudo perf record -e "$c_perf_record_events" -g -p "$(< "$c_qemu_pidfile")" -o "$output_file_name"
+  } &
 }
 
 # Returns (prints) the run walltimes (one per line).
