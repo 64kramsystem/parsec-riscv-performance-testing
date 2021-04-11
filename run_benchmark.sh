@@ -54,13 +54,13 @@ Options:
 
 - `--no-smt`: Disables SMT
 - `--perf-stat`: Run perf stat; when enabled, the timings file is not written
-- `--perf-record`: Run perf record; when enabled, the timings file is not written
+- `--perf-record`: Run perf record; only on run per thread group is executed, ignoring the <run> parameter
 - `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
 - `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
 
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
-WATCH OUT! Enabling both perf options will cause the runs to be doubled (as they presumably can'\''t be run in parallel).
+WATCH OUT! Specifying any of the perf options will disable the standard benchmark.
 
 WATCH OUT! It'\''s advisable to lock the CPU clock (typically, this is done in the BIOS), in order to avoid the clock decreasing when the number of threads increase.
 
@@ -194,19 +194,10 @@ function run_benchmark {
 ################################################################################
 " | tee -a "$benchmark_log_file_name"
 
-    # The `cd` is for simulating a new session.
-    #
-    local benchmark_command
-    benchmark_command=$(compose_benchmark_command "$threads")
-    benchmark_command="for ((run=0; run < $v_count_runs; run++)); do
-${benchmark_command}
-cd
-done"
-
     if [[ -z $v_enable_perf_stat && -z $v_enable_perf_record ]]; then
       local standard_timing_file_name="$c_output_dir/$v_bench_name.timings.csv"
       local perf_pid=
-      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$standard_timing_file_name"
+      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$standard_timing_file_name"
     fi
 
     # perf is killed inside the run_benchmark_thread_group() function, as we want to run profiling as
@@ -221,15 +212,16 @@ done"
       #
       store_vcpu_pids "$threads"
 
-      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
+      run_benchmark_thread_group "$perf_pid" "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
     fi
 
     if [[ -n $v_enable_perf_record ]]; then
+      local runs=1
       local perf_record_timing_file_name="$c_output_dir/$v_bench_name.perf_record.timings.csv"
       local perf_pid
       perf_pid=$(start_perf_record "$threads")
 
-      run_benchmark_thread_group "$benchmark_command" "$perf_pid" "$threads" "$benchmark_log_file_name" "$perf_record_timing_file_name"
+      run_benchmark_thread_group "$perf_pid" "$threads" "$runs" "$benchmark_log_file_name" "$perf_record_timing_file_name"
     fi
 
     shutdown_guest
@@ -243,11 +235,23 @@ done"
 ####################################################################################################
 
 function run_benchmark_thread_group {
-  local benchmark_command=$1
-  local perf_pid=$2
-  local threads=$3
+  local perf_pid=$1
+  local threads=$2
+  local runs=$3
   local benchmark_log_file_name=$4
   local timings_file_name=$5
+
+  # The `cd` is for simulating a new session.
+  #
+  local benchmark_command
+  benchmark_command=$(compose_benchmark_command "$threads")
+
+  if ((runs > 1)); then
+    benchmark_command="for ((run=0; run < $runs; run++)); do
+${benchmark_command}
+cd
+done"
+  fi
 
   if [[ ! -s $timings_file_name ]]; then
     echo "threads,run,run_time" > "$timings_file_name"
