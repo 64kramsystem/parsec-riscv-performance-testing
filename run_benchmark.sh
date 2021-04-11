@@ -10,8 +10,8 @@ shopt -s inherit_errexit
 # VARIABLES/CONSTANTS
 ####################################################################################################
 
-v_min_threads=2
-v_max_threads=128
+v_min_threads=2            # int
+v_max_threads=128          # int
 
 c_ssh_user=root
 c_ssh_password=busybear
@@ -42,7 +42,7 @@ c_perf_record_events=cpu-cycles
 
 c_debug_log_file=$(basename "$0").log
 
-c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-m|--min <threads>] [-M|--max <threads>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
+c_help='Usage: '"$(basename "$0")"' [-s|--no-smt] [-p|--perf-stat] [-P|--perf-record] [-t|--threads <threads_spec>] <bench_name> <runs> <qemu_boot_script> <benchmark_script>
 
 Runs the specified benchmark with different vCPU/thread numbers, and stores the results.
 
@@ -55,8 +55,7 @@ Options:
 - `--no-smt`: Disables SMT
 - `--perf-stat`: Run perf stat; when enabled, the timings file is not written
 - `--perf-record`: Run perf record; only on run per thread group is executed, ignoring the <run> parameter
-- `--min <threads>`: Set the minimum amount of threads to start; defaults to '"$v_min_threads"'
-- `--max <threads>`: Set the threads maximum threshold; defaults to '"$v_max_threads"'
+- `--threads <min>-<max>`: Set the minimum/maximum threads (both ends are closed); defaults to '"$v_min_threads-$v_max_threads"'
 
 Some benchmarks may override the min/max for different reasons (they will print a warning).
 
@@ -98,7 +97,9 @@ v_thread_numbers_list=()        # array
 ####################################################################################################
 
 function decode_cmdline_args {
-  eval set -- "$(getopt --options hspPm:M: --long help,no-smt,perf-stat,perf-record,min:,max: --name "$(basename "$0")" -- "$@")"
+  eval set -- "$(getopt --options hspPt: --long help,no-smt,perf-stat,perf-record,threads: --name "$(basename "$0")" -- "$@")"
+
+  local threads_spec=
 
   while true ; do
     case "$1" in
@@ -114,11 +115,8 @@ function decode_cmdline_args {
       -P|--perf-record)
         v_enable_perf_record=1
         shift ;;
-      -m|--min)
-        v_min_threads=$2
-        shift 2 ;;
-      -M|--max)
-        v_max_threads=$2
+      -t|--threads)
+        set_min_max_threads "$2"
         shift 2 ;;
       --)
         shift
@@ -368,6 +366,26 @@ function store_timings {
 ####################################################################################################
 # HELPERS
 ####################################################################################################
+
+function set_min_max_threads {
+  local threads_spec=$1
+
+  if [[ -z $threads_spec ]]; then
+    return
+  elif [[ $threads_spec =~ ^([[:digit:]]+)-([[:digit:]]+)$ ]]; then
+    v_min_threads=${BASH_REMATCH[1]}
+    v_max_threads=${BASH_REMATCH[2]}
+
+    # Easy mistake :)
+    #
+    if ((v_min_threads > 0)); then
+      return
+    fi
+  fi
+
+  >&2 echo 'Invalid threads spec (see help): `'"$threads_spec"'`'
+  exit 1
+}
 
 # Input: $@=ssh params
 #
