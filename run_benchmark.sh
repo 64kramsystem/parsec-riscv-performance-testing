@@ -181,6 +181,7 @@ function register_exit_handlers {
 
     if [[ -f $c_qemu_pidfile ]]; then
       pkill -F "$c_qemu_pidfile"
+      # The pidfile is 600, so we need `-f`.
       rm -f "$c_qemu_pidfile"
     fi
   }' EXIT
@@ -232,8 +233,6 @@ function run_benchmark {
 
       start_perf_stat "$threads"
 
-      # We don't need this in perf record, which is not per-thread.
-      #
       store_vcpu_pids "$threads"
 
       run_benchmark_thread_group "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
@@ -246,6 +245,8 @@ function run_benchmark {
       local perf_record_timing_file_name="$c_output_dir/$v_bench_name.perf_record.timings.csv"
 
       start_perf_record "$threads" "$benchmark_log_file_name"
+
+      # We don't need to store the vcpu pids in this case, since perf is not recording per-thread.
 
       run_benchmark_thread_group "$threads" "$runs" "$benchmark_log_file_name" "$perf_record_timing_file_name"
 
