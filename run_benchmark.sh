@@ -24,6 +24,7 @@ c_ssh_port=10000
 c_components_dir=$(readlink -f "$(dirname "$0")")/components
 c_output_dir=$(readlink -f "$(dirname "$0")")/output
 c_temp_dir=$(dirname "$(mktemp)")
+c_perf_shell_pidfile=$c_temp_dir/$(basename "$0").perf.pid
 
 c_qemu_binary=$c_components_dir/qemu-system-riscv64
 c_qemu_debug_file=$(basename "$0").qemu_debug.log
@@ -171,10 +172,16 @@ function copy_busybear_image {
 #
 function register_exit_handlers {
   trap '{
+    if [[ -f $c_perf_shell_pidfile ]]; then
+      sudo pkill -P "$(< "$c_perf_shell_pidfile")"
+      sudo rm "$c_perf_shell_pidfile"
+    fi
+
     exit_system_configuration_reset
 
     if [[ -f $c_qemu_pidfile ]]; then
       pkill -F "$c_qemu_pidfile"
+      # The pidfile is 600, so we need `-f`.
       rm -f "$c_qemu_pidfile"
     fi
   }' EXIT
@@ -213,26 +220,37 @@ function run_benchmark {
       run_benchmark_thread_group "$threads" "$v_count_runs" "$benchmark_log_file_name" "$standard_timing_file_name"
     fi
 
-    # perf is killed inside the run_benchmark_thread_group() function, as we want to run profiling as
-    # tightly as around the benchmark execution.
-
+    # The perf shell pidfile is created in the `start_perf_*`` functions.
+    # Using a pidfile inside a sudoed shell is the simplest way, as finding the exact process to kill
+    # in the background/subshell/sudo processes tree is a bloody mess (e.g. the tree is different based
+    # on how the commands are grouped - `{ cmds ;}` or `( cmds )`).
+    # The process is killed inside the run_benchmark_thread_group() function, as we want to run profiling as
+    # tightly as possible around the benchmark execution.
+    # Note that we kill the shell pid child(ren) (which is the `perf` process), via `pkill -P`.
+    #
     if [[ -n $v_enable_perf_stat ]]; then
       local perf_stat_timing_file_name="$c_output_dir/$v_bench_name.perf_stat.timings.csv"
+
       start_perf_stat "$threads"
 
-      # We don't need this in perf record, which is not per-thread.
-      #
       store_vcpu_pids "$threads"
 
       run_benchmark_thread_group "$threads" "$v_count_runs" "$benchmark_log_file_name" "$perf_stat_timing_file_name"
+
+      sudo rm "$c_perf_shell_pidfile"
     fi
 
     if [[ -n $v_enable_perf_record ]]; then
       local runs=1
       local perf_record_timing_file_name="$c_output_dir/$v_bench_name.perf_record.timings.csv"
+
       start_perf_record "$threads" "$benchmark_log_file_name"
 
+      # We don't need to store the vcpu pids in this case, since perf is not recording per-thread.
+
       run_benchmark_thread_group "$threads" "$runs" "$benchmark_log_file_name" "$perf_record_timing_file_name"
+
+      sudo rm "$c_perf_shell_pidfile"
     fi
 
     shutdown_guest
@@ -278,21 +296,21 @@ done"
   command_output=$(run_remote_command "$benchmark_command" | tee -a "$benchmark_log_file_name")
 
   if [[ -n $v_enable_perf_stat || -n $v_enable_perf_record ]]; then
+    if [[ ! -f $c_perf_shell_pidfile ]]; then
+      >&2 echo "Perf was enabled, but the pidfile hasn't been created - possibly, the pattern didn't match."
+      exit 1
+    fi
+
+    local perf_shell_pid
+    perf_shell_pid=$(< "$c_perf_shell_pidfile")
+
     echo "> Killing perf (may take a while)..."
 
-    # Blanket killing is not a clean solution, however, since perf is running in a background subshell,
-    # handling the PID tree is an unholy mess for a few reasons.
-    #
-    local perfs_killed
-    perfs_killed=$(sudo pkill --echo --full '^/.+/perf record' | wc -l)
-
-    if ((perfs_killed != 1)); then
-      >&2 echo "WATCH OUT! Killed $perfs_killed perf processes - 1 expected."
-    fi
+    sudo pkill -P "$perf_shell_pid"
 
     # There may be a lot of data to write, and the process is in the background.
     #
-    while pgrep -f '/perf record' > /dev/null; do sleep 0.1; done
+    while pgrep -P "$perf_shell_pid" > /dev/null; do sleep 0.1; done
   fi
 
   local run_walltimes
@@ -339,7 +357,10 @@ function start_perf_stat {
   local output_file_name
   output_file_name="$c_output_dir/$v_bench_name.perf_stat.data.$(printf %03d "$threads").csv"
 
-  sudo perf stat -e "$c_perf_stat_events" --per-thread -p "$(< "$c_qemu_pidfile")" --field-separator "," 2> "$output_file_name" > /dev/null &
+  sudo sh -c "
+    echo \$\$ > $(q "$c_perf_shell_pidfile")
+    perf stat -e $(q "$c_perf_stat_events") --per-thread -p $(< "$c_qemu_pidfile") --field-separator "," 2> $(q "$output_file_name") > /dev/null
+  " &
 }
 
 # Returns (prints) the perf process pid.
@@ -358,10 +379,10 @@ function start_perf_record {
 
     echo "> Starting perf record..."
 
-    # Watch out! If this function's output will be captured via command substitution, must add disconnect
-    # from stdout, otherwise, it will block.
-    #
-    sudo perf record -e "$c_perf_record_events" -g -p "$(< "$c_qemu_pidfile")" -o "$output_file_name"
+    sudo sh -c "
+      echo \$\$ > $(q "$c_perf_shell_pidfile")
+      perf record -e $(q "$c_perf_record_events") -g -p $(< "$c_qemu_pidfile") -o $(q "$output_file_name")
+    "
   } &
 }
 
@@ -404,6 +425,14 @@ function store_timings {
 ####################################################################################################
 # HELPERS
 ####################################################################################################
+
+# Make the least invasive as possible, as in some cases, it can make the command ugly.
+#
+function q {
+  local string=$1
+
+  printf "%q" "$string"
+}
 
 function set_thread_numbers {
   local threads_spec=$1
