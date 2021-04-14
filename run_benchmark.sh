@@ -303,9 +303,7 @@ done"
     local perf_shell_pid
     perf_shell_pid=$(< "$c_perf_shell_pidfile")
 
-    echo "> Killing perf, shell PID: $perf_shell_pid (may take a while)..."
-
-    ps aux --forest | grep -P '\./run_bench|perf' | grep -vP 'grep|qemu-system-riscv64'
+    echo "> Killing perf (may take a while)..."
 
     sudo pkill -P "$perf_shell_pid"
 
